@@ -15,6 +15,11 @@ struct ServerOptions {
     unsigned int data_port = 8080;
 };
 
+struct FTPServerRequest {
+    FTPCommandReader command;
+    string body;
+};
+
 struct FTPServerResponse {
     FTPCommandReader command;
     string body;
@@ -29,7 +34,8 @@ private:
     void InitDataServer();
 public:
     void InitServer(ServerOptions options);
-    unsigned int AddRequestHandler(FTPCommandList cmd, function<void(FTPServerResponse)> handler);
+    void ShutdownServer();
+    unsigned int AddRequestHandler(function<void(FTPServerRequest, FTPServerResponse)> handler);
     void RemoveRequestHandler(unsigned int handlerId);
 };
 
