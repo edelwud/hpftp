@@ -1,5 +1,5 @@
 all: build execute
 build:
-	gcc *.c -o debug/result
+	g++ *.cpp -o debug/result
 execute:
 	./debug/result
