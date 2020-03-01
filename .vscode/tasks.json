@@ -4,9 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "make",
+            "label": "cmake",
             "type": "shell",
-            "command": "make all",
+            "command": "cd ../FTP_build && cmake ../FTP && cmake --build . && ./FTPServer",
             "group": {
                 "kind": "build",
                 "isDefault": true

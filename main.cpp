@@ -2,13 +2,12 @@
 
 #include "Server.h"
 
+using namespace std;
+
 int main() {
-    ServerOptions options = { 4 };
+    ServerOptions options = { 4, 8021 };
     FTPServer *server = new FTPServer();
     server->InitServer(options);
-    server->AddRequestHandler(FTPCommandList::LS, [&](FTPServerResponse response) {
-        
-    });
 
     return 0;
 }
