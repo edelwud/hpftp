@@ -17,6 +17,7 @@
 #include <pwd.h>
 #include <netinet/in.h>
 #include <time.h>
+#include <pthread.h>
 
 #define MAX_BUFFER_SIZE 4096
 
@@ -45,7 +46,6 @@ private:
 
     void InitCommandServer();
     void InitDataServer();
-
 
     int CreateSocket();
     int AcceptMessage(int listenFileDescriptor);
