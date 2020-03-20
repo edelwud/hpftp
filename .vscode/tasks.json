@@ -6,7 +6,7 @@
         {
             "label": "cmake",
             "type": "shell",
-            "command": "cd ../FTP_build && cmake ../FTP && cmake --build . && ./FTPServer",
+            "command": "cd ./dist && cmake ../../FTP && cmake --build . && clear && ./FTPServer",
             "group": {
                 "kind": "build",
                 "isDefault": true

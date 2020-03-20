@@ -11,11 +11,14 @@ void FTPServer::InitCommandServer() {
     this->cmdFD = this->CreateSocket();
 
     while (true) {
-        int connectionDesc = this->AcceptMessage(this->cmdFD);
+        FTPRequest req = this->AcceptMessage(this->cmdFD);
 
-        char buffer[MAX_BUFFER_SIZE] = { 0 };
-        strcat(buffer, "OK");
-        write(connectionDesc, buffer, strlen(buffer));
+        ThreadData tdata;
+
+        pthread_attr_init(&tdata.attrs);
+        if (pthread_create(&tdata.id, &tdata.attrs, this->ManageRequest, (void *)&req) != 0) {
+            throw runtime_error("Creating a new thread: failed");
+        }
     }
 }
 
@@ -62,7 +65,7 @@ int FTPServer::CreateSocket() {
 /**
  * Accepting user message from file descriptor
  */
-int FTPServer::AcceptMessage(int listenFileDescriptor) {
+FTPRequest FTPServer::AcceptMessage(int listenFileDescriptor) {
     sockaddr_in clientAddress;
     socklen_t addrlen = sizeof(clientAddress);
 
@@ -70,5 +73,25 @@ int FTPServer::AcceptMessage(int listenFileDescriptor) {
     if (acceptedMessageDesc < 0) {
         throw runtime_error("Accepted message: failed");
     }
-    return acceptedMessageDesc;
+    return FTPRequest{ acceptedMessageDesc, clientAddress };
+}
+
+/**
+ * Request manager
+ * @param int connection desctiptor
+ */
+void * FTPServer::ManageRequest(void *requestProto) {
+    FTPRequest request = *(FTPRequest *)requestProto;
+
+    cout << request.socket_desc << endl;
+    cout << request.client.sin_port << endl;
+
+    // Sending welcome message to client
+    char buffer[MAX_BUFFER_SIZE] = { 0 };
+    FTPResponse response(request);
+    response.Prepare(StatusCodes::SERVICE_READY, { "Привет" }, buffer);
+    response.Send();
+
+    write(request.socket_desc, buffer, strlen(buffer));
+    pthread_exit(0);
 }

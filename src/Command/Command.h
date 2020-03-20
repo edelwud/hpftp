@@ -4,21 +4,9 @@
 #include <map>
 #include <string>
 
-#include "Executor.h"
+#include "../Filesystem/Executor.h"
 
 using namespace std;
-
-class BufferReader {
-private:
-    string buffer;
-    int position = 0;
-public:
-    void LoadBuffer(string buffer);
-    char ReadByte();
-    int ReadInt();
-    float ReadFloat();
-    string ReadString(char delimiter);
-};
 
 enum class FTPCommandList {
     ABOR, /* Abort file loading */                      CDUP, /* Change dir to parent */ 
@@ -53,7 +41,6 @@ map<FTPCommandList, string> FTPCommandListMap = {
 };
 
 class FTPCommandReader:
-    protected BufferReader,
     protected Executor {
 public:
     FTPCommandReader Unpack(string data);

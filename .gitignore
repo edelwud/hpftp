@@ -1,2 +1,5 @@
-debug
-debug/*
+.vscode
+.vscode/*
+
+dist
+dist/*

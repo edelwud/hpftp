@@ -3,7 +3,7 @@
 
 class Logger {
 public:
-    print();
+    // print();
 };
 
 #endif
