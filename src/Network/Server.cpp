@@ -43,7 +43,7 @@ int FTPServer::CreateSocket() {
     setsockopt(serverFileDescriptor, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
 
     // Binding on port which setted in options
-    sockaddr_in address = (struct sockaddr_in){
+    sockaddr_in address = (struct sockaddr_in) {
         AF_INET,
         htons(this->options.cmd_port),
         (struct in_addr){INADDR_ANY}
@@ -88,9 +88,9 @@ void * FTPServer::ManageRequest(void *requestProto) {
 
     // Sending welcome message to client
     char buffer[MAX_BUFFER_SIZE] = { 0 };
-    FTPResponse response(request);
-    response.Prepare(StatusCodes::SERVICE_READY, { "Привет" }, buffer);
-    response.Send();
+    // FTPResponse response(request);
+    // response.Prepare(StatusCodes::SERVICE_READY, { "Привет" }, buffer);
+    // response.Send();
 
     write(request.socket_desc, buffer, strlen(buffer));
     pthread_exit(0);

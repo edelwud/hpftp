@@ -23,9 +23,9 @@
 
 #include <pthread.h>
 
-#include "StatusCodes.h"
 #include "Request.h"
 #include "Response.h"
+#include "StatusCodes.h"
 
 #define MAX_BUFFER_SIZE 4096
 

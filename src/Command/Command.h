@@ -1,10 +1,8 @@
-#ifndef COMMAND
-#define COMMAND
+#ifndef COMMAND_H
+#define COMMAND_H
 
 #include <map>
 #include <string>
-
-#include "../Filesystem/Executor.h"
 
 using namespace std;
 
@@ -24,7 +22,7 @@ enum class FTPCommandList {
     USER, /* Abort file loading */ 
 };
 
-map<FTPCommandList, string> FTPCommandListMap = {
+static map<FTPCommandList, string> FTPCommandListMap = {
     { FTPCommandList::ABOR, "ABOR" },{ FTPCommandList::CWD, "CDUP" },
     { FTPCommandList::CDUP, "CWD" },{ FTPCommandList::DELE, "DELE" },
     { FTPCommandList::EPSV, "EPSV" },{ FTPCommandList::HELP, "HELP" },
@@ -40,8 +38,7 @@ map<FTPCommandList, string> FTPCommandListMap = {
     { FTPCommandList::USER, "USER" }
 };
 
-class FTPCommandReader:
-    protected Executor {
+class FTPCommandReader {
 public:
     FTPCommandReader Unpack(string data);
     void Pack(string data);

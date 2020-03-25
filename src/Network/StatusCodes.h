@@ -1,5 +1,5 @@
-#ifndef STATUSCODES
-#define STATUSCODES
+#ifndef STATUS_CODES_H
+#define STATUS_CODES_H
 
 using namespace std;
 

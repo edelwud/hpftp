@@ -5,13 +5,14 @@ project(FTPServer C CXX)
 
 # add the executable
 add_executable(
-    FTPServer src/main.cpp 
+    FTPServer src/main.cpp
     src/Network/Server.h 
     src/Network/Server.cpp
     src/Network/Response.cpp 
     src/Network/Response.h 
     src/Network/Request.cpp 
     src/Network/Request.h
+    src/Command/Command.h
 )
 
 # including pthread.h library

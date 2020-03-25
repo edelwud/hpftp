@@ -1,5 +1,5 @@
-#ifndef RESPONSE
-#define RESPONSE
+#ifndef RESPONSE_H
+#define RESPONSE_H
 
 #include <map>
 #include <string>
@@ -15,7 +15,7 @@ private:
     FTPRequest request;
     string message;
 public:
-    FTPResponse(FTPRequest req) {};
+    FTPResponse(FTPRequest req) : request(req) {};
     string Prepare(StatusCodes code, initializer_list<string> params, char *dest);
     void ReadMessage(string message);
     void Send();
