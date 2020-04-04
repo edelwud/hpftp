@@ -22,10 +22,13 @@
 #include <sys/time.h>
 
 #include <pthread.h>
+#include <thread>
+#include <future>
 
 #include "Request.h"
 #include "Response.h"
 #include "StatusCodes.h"
+#include "../Logger.h"
 
 #define MAX_BUFFER_SIZE 4096
 
@@ -37,11 +40,6 @@ struct ServerOptions {
     unsigned int data_port = 8080;
 };
 
-struct ThreadData {
-    pthread_t id;
-    pthread_attr_t attrs;
-};
-
 class FTPServer {
 private:
     ServerOptions options;
@@ -51,14 +49,14 @@ private:
     void InitCommandServer();
     void InitDataServer();
     
-    int CreateSocket();
-    FTPRequest AcceptMessage(int listenFileDesc);
-    static void * ManageRequest(void *connectionDesc);
+    int CreateSocket(int port);
+    static FTPRequest AcceptMessage(int listenFileDesc);
+    static void ManageRequest(FTPRequest request);
 public:
     void InitServer(ServerOptions options);
     void ShutdownServer();
     unsigned int AddRequestHandler(function<void(FTPRequest, FTPResponse)> handler);
-    void RemoveRequestHandler(unsigned int handlerId);
+    void RemoveRequestHandler(unsigned int handler_id);
 };
 
 #endif

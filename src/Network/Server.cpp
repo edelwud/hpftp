@@ -1,42 +1,57 @@
 #include "Server.h"
 
+/**
+ * Initialization of FTP server
+ */
 void FTPServer::InitServer(ServerOptions options) {
     this->options = options;
 
+    // thread commandThread([this](){ this->InitCommandServer(); });
+    // thread dataThread([this](){ this->InitCommandServer(); });
+    // commandThread.join();
+    // dataThread.join();
+
     this->InitCommandServer();
-    this->InitDataServer();
 }
 
-void FTPServer::InitCommandServer() {
-    this->cmdFD = this->CreateSocket();
-
+/** 
+ * Creating and responsing command socket
+ */
+void FTPServer::InitCommandServer() try {
+    this->cmdFD = this->CreateSocket(this->options.cmd_port);
+    Logger::Info("Command server binded on port " + to_string(this->options.cmd_port));
+    
     while (true) {
-        FTPRequest req = this->AcceptMessage(this->cmdFD);
+        // Waiting for new client
+        FTPRequest request = this->AcceptMessage(this->cmdFD);
+        Logger::Info("Connection accepted");
 
-        ThreadData tdata;
-
-        pthread_attr_init(&tdata.attrs);
-        if (pthread_create(&tdata.id, &tdata.attrs, this->ManageRequest, (void *)&req) != 0) {
-            throw runtime_error("Creating a new thread: failed");
-        }
+        // Execution of async request manager
+        async(launch::async, this->ManageRequest, request);
     }
+} catch(runtime_error &error) {
+    Logger::Error(error.what());
 }
 
-
+/**
+ * Creating and responsing data socket
+ */
 void FTPServer::InitDataServer() {
     
 }
 
-
 /**
  * Creation socket
  */
-int FTPServer::CreateSocket() {
+int FTPServer::CreateSocket(int port) {
+    Logger::Progress progress = Logger::CreateTask("Creating socket", 3);
+
     // Creating socket file descriptor
     int serverFileDescriptor;
     if ((serverFileDescriptor = socket(AF_INET, SOCK_STREAM, 0)) == 0) { 
         throw runtime_error("Creating socket file descriptor: failed");
     }
+    progress("creating socket file descriptor");
 
     // Reusing socket after program exit
     int reuse = 1;
@@ -45,20 +60,21 @@ int FTPServer::CreateSocket() {
     // Binding on port which setted in options
     sockaddr_in address = (struct sockaddr_in) {
         AF_INET,
-        htons(this->options.cmd_port),
+        htons(port),
         (struct in_addr){INADDR_ANY}
     };
 
     if (bind(serverFileDescriptor, (sockaddr *)&address, sizeof(sockaddr)) < 0) {
-        throw runtime_error("Attaching socket to the port " + to_string(this->options.cmd_port) + ": failed");
+        throw runtime_error("Attaching socket to the port " + to_string(port) + ": failed");
     }
+    progress("binding socket port options");
     
     // Listening incoming requests
     if (listen(serverFileDescriptor, this->options.connections_queue) < 0) {
         throw runtime_error("Listening on socket: failed");
     }
+    progress("listening port");
 
-    cout << "Command connection started on port " << this->options.cmd_port << endl;
     return serverFileDescriptor;
 }
 
@@ -68,7 +84,6 @@ int FTPServer::CreateSocket() {
 FTPRequest FTPServer::AcceptMessage(int listenFileDescriptor) {
     sockaddr_in clientAddress;
     socklen_t addrlen = sizeof(clientAddress);
-
     int acceptedMessageDesc = accept(listenFileDescriptor, (sockaddr *)&clientAddress, &addrlen);
     if (acceptedMessageDesc < 0) {
         throw runtime_error("Accepted message: failed");
@@ -80,9 +95,7 @@ FTPRequest FTPServer::AcceptMessage(int listenFileDescriptor) {
  * Request manager
  * @param int connection desctiptor
  */
-void * FTPServer::ManageRequest(void *requestProto) {
-    FTPRequest request = *(FTPRequest *)requestProto;
-
+void FTPServer::ManageRequest(FTPRequest request) {
     cout << request.socket_desc << endl;
     cout << request.client.sin_port << endl;
 

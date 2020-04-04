@@ -4,6 +4,8 @@
 #include <map>
 #include <string>
 
+#include "../Constants.h"
+
 using namespace std;
 
 enum class FTPCommandList {
@@ -40,8 +42,8 @@ static map<FTPCommandList, string> FTPCommandListMap = {
 
 class FTPCommandReader {
 public:
-    FTPCommandReader Unpack(string data);
-    void Pack(string data);
+    static FTPCommandList Unpack(char data[MAX_BUFFER_SIZE]);
+    static void Pack(string data);
 };
 
 #endif
