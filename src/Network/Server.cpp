@@ -20,11 +20,11 @@ void FTPServer::InitServer(ServerOptions options) {
 void FTPServer::InitCommandServer() try {
     this->cmdFD = this->CreateSocket(this->options.cmd_port);
     Logger::Info("Command server binded on port " + to_string(this->options.cmd_port));
-    
+
     while (true) {
         // Waiting for new client
-        FTPRequest request = this->AcceptMessage(this->cmdFD);
-        Logger::Info("Connection accepted");
+        FTPClient request = this->AcceptMessage(this->cmdFD);
+        Logger::Info("Connection accepted, address");
 
         // Execution of async request manager
         async(launch::async, this->ManageRequest, request);
@@ -81,30 +81,26 @@ int FTPServer::CreateSocket(int port) {
 /**
  * Accepting user message from file descriptor
  */
-FTPRequest FTPServer::AcceptMessage(int listenFileDescriptor) {
+FTPClient FTPServer::AcceptMessage(int listenFileDescriptor) {
     sockaddr_in clientAddress;
     socklen_t addrlen = sizeof(clientAddress);
     int acceptedMessageDesc = accept(listenFileDescriptor, (sockaddr *)&clientAddress, &addrlen);
     if (acceptedMessageDesc < 0) {
         throw runtime_error("Accepted message: failed");
     }
-    return FTPRequest{ acceptedMessageDesc, clientAddress };
+    return FTPClient{ acceptedMessageDesc, clientAddress };
 }
 
 /**
  * Request manager
  * @param int connection desctiptor
  */
-void FTPServer::ManageRequest(FTPRequest request) {
-    cout << request.socket_desc << endl;
-    cout << request.client.sin_port << endl;
+void FTPServer::ManageRequest(FTPClient request) try {
+    auto [code, cmd] = request.Read();
+    
+    string commandStringify = FTPCommandReader::GetCommand(code).value_or("");
 
-    // Sending welcome message to client
-    char buffer[MAX_BUFFER_SIZE] = { 0 };
-    // FTPResponse response(request);
-    // response.Prepare(StatusCodes::SERVICE_READY, { "Привет" }, buffer);
-    // response.Send();
+    Logger::Info("Client sent commmand " + commandStringify 
+        + (cmd.size() ? " with operand " + cmd : " with no operand"));
 
-    write(request.socket_desc, buffer, strlen(buffer));
-    pthread_exit(0);
-}
+} catch(exception &e) { Logger::Error(e.what()); }

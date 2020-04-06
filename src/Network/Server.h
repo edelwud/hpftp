@@ -25,7 +25,7 @@
 #include <thread>
 #include <future>
 
-#include "Request.h"
+#include "Client.h"
 #include "Response.h"
 #include "StatusCodes.h"
 #include "../Logger.h"
@@ -50,13 +50,13 @@ private:
     void InitDataServer();
     
     int CreateSocket(int port);
-    static FTPRequest AcceptMessage(int listenFileDesc);
-    static void ManageRequest(FTPRequest request);
+    static FTPClient AcceptMessage(int listenFileDesc);
+    static void ManageRequest(FTPClient request);
 public:
     void InitServer(ServerOptions options);
     void ShutdownServer();
-    unsigned int AddRequestHandler(function<void(FTPRequest, FTPResponse)> handler);
-    void RemoveRequestHandler(unsigned int handler_id);
+    unsigned int AddClientHandler(function<void(FTPClient, FTPResponse)> handler);
+    void RemoveClientHandler(unsigned int handler_id);
 };
 
 #endif

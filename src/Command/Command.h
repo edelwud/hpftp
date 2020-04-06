@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <optional>
 
 #include "../Constants.h"
 
@@ -24,26 +25,27 @@ enum class FTPCommandList {
     USER, /* Abort file loading */ 
 };
 
-static map<FTPCommandList, string> FTPCommandListMap = {
-    { FTPCommandList::ABOR, "ABOR" },{ FTPCommandList::CWD, "CDUP" },
-    { FTPCommandList::CDUP, "CWD" },{ FTPCommandList::DELE, "DELE" },
-    { FTPCommandList::EPSV, "EPSV" },{ FTPCommandList::HELP, "HELP" },
-    { FTPCommandList::LIST, "LIST" },{ FTPCommandList::MDTM, "MDTM" },
-    { FTPCommandList::MKD, "MKD" },{ FTPCommandList::NLST, "NLST" },
-    { FTPCommandList::NOOP, "NOOP" },{ FTPCommandList::PASS, "PASS" },
-    { FTPCommandList::PASV, "PASV" },{ FTPCommandList::PORT, "PORT" },
-    { FTPCommandList::PWD, "PWD" },{ FTPCommandList::QUIT, "QUIT" },
-    { FTPCommandList::REIN, "REIN" },{ FTPCommandList::RETR, "RETR" },
-    { FTPCommandList::RMD, "RMD" },{ FTPCommandList::RNFR, "RNFR" },
-    { FTPCommandList::SIZE, "SIZE" },{ FTPCommandList::STOR, "STOR" },
-    { FTPCommandList::SYST, "SYST" },{ FTPCommandList::TYPE, "TYPE" },
-    { FTPCommandList::USER, "USER" }
+static map<string, FTPCommandList> FTPCommandListMap = {
+    { "ABOR", FTPCommandList::ABOR },{ "CWD", FTPCommandList::CWD },
+    { "CDUP", FTPCommandList::CDUP },{ "DELE", FTPCommandList::DELE },
+    { "EPSV", FTPCommandList::EPSV },{ "HELP", FTPCommandList::HELP },
+    { "LIST", FTPCommandList::LIST },{ "MDTM", FTPCommandList::MDTM },
+    { "MKD", FTPCommandList::MKD },{ "NLST", FTPCommandList::NLST },
+    { "NOOP", FTPCommandList::NOOP },{ "PASS", FTPCommandList::PASS },
+    { "PASV", FTPCommandList::PASV },{ "PORT", FTPCommandList::PORT },
+    { "PWD", FTPCommandList::PWD },{ "QUIT", FTPCommandList::QUIT },
+    { "REIN", FTPCommandList::REIN },{ "RETR", FTPCommandList::RETR },
+    { "RMD", FTPCommandList::RMD },{ "RNFR", FTPCommandList::RNFR },
+    { "SIZE", FTPCommandList::SIZE },{ "STOR", FTPCommandList::STOR },
+    { "SYST", FTPCommandList::SYST },{ "TYPE", FTPCommandList::TYPE },
+    { "USER", FTPCommandList::USER }
 };
 
 class FTPCommandReader {
 public:
     static FTPCommandList Unpack(char data[MAX_BUFFER_SIZE]);
     static void Pack(string data);
+    static optional<string> GetCommand(FTPCommandList command);
 };
 
 #endif

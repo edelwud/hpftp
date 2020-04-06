@@ -5,17 +5,17 @@
 #include <string>
 #include <initializer_list>
 
-#include "Request.h"
+#include "Client.h"
 #include "StatusCodes.h"
 
 using namespace std;
 
 class FTPResponse {
 private:
-    FTPRequest request;
+    FTPClient request;
     string message;
 public:
-    FTPResponse(FTPRequest req) : request(req) {};
+    FTPResponse(FTPClient req) : request(req) {};
     string Prepare(StatusCodes code, initializer_list<string> params, char *dest);
     void ReadMessage(string message);
     void Send();
