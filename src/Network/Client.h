@@ -1,5 +1,4 @@
-#ifndef REQUEST
-#define REQUEST
+#pragma once 
 
 #include <string>
 #include <vector>
@@ -24,5 +23,3 @@ public:
     FTPClient(int descriptor, sockaddr_in client) : socketDesc(descriptor), client(client) {};
     Contract Read();
 };
-
-#endif

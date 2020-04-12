@@ -1,5 +1,4 @@
-#ifndef RESPONSE_H
-#define RESPONSE_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -20,5 +19,3 @@ public:
     void ReadMessage(string message);
     void Send();
 };
-
-#endif

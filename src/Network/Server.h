@@ -1,5 +1,4 @@
-#ifndef SERVER
-#define SERVER
+#pragma once
 
 #include <map>
 #include <string>
@@ -28,9 +27,8 @@
 #include "Client.h"
 #include "Response.h"
 #include "StatusCodes.h"
+#include "../Command/Command.h"
 #include "../Logger.h"
-
-#define MAX_BUFFER_SIZE 4096
 
 using namespace std;
 
@@ -58,5 +56,3 @@ public:
     unsigned int AddClientHandler(function<void(FTPClient, FTPResponse)> handler);
     void RemoveClientHandler(unsigned int handler_id);
 };
-
-#endif

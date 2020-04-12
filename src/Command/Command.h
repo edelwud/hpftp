@@ -1,5 +1,4 @@
-#ifndef COMMAND_H
-#define COMMAND_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -47,5 +46,3 @@ public:
     static void Pack(string data);
     static optional<string> GetCommand(FTPCommandList command);
 };
-
-#endif

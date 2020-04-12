@@ -1,9 +1,6 @@
-#ifndef EXECUTOR
-#define EXECUTOR
+#pragma once 
 
 class Executor {
 public:
     void ChangeDir();
 };
-
-#endif

@@ -13,10 +13,11 @@ add_executable(
     src/Network/Response.cpp 
     src/Network/Response.h 
     
-    src/Network/Request.cpp 
-    src/Network/Request.h
+    src/Network/Client.cpp 
+    src/Network/Client.h
     
     src/Command/Command.h
+    src/Command/Command.cpp
 
     src/Logger.h
     src/Logger.cpp

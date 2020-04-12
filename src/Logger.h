@@ -1,5 +1,4 @@
-#ifndef LOGGER
-#define LOGGER
+#pragma once
 
 #include <string_view>
 #include <sstream>
@@ -19,5 +18,3 @@ public:
 
     static Progress CreateTask(string title, int numberOfTasks);
 };
-
-#endif

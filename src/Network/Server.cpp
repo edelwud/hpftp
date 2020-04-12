@@ -58,7 +58,7 @@ int FTPServer::CreateSocket(int port) {
     setsockopt(serverFileDescriptor, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
 
     // Binding on port which setted in options
-    sockaddr_in address = (struct sockaddr_in) {
+    sockaddr_in address{
         AF_INET,
         htons(port),
         (struct in_addr){INADDR_ANY}

@@ -1,5 +1,4 @@
-#ifndef STATUS_CODES_H
-#define STATUS_CODES_H
+#pragma once
 
 using namespace std;
 
@@ -10,5 +9,3 @@ enum class StatusCodes {
     OPENED_CHANNEL = 125,
     SERVICE_READY = 220
 };
-
-#endif
