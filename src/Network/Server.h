@@ -34,8 +34,8 @@ using namespace std;
 
 struct ServerOptions {
     unsigned int connections_queue = 1;
-    unsigned int cmd_port = 21;
-    unsigned int data_port = 8080;
+    unsigned int cmdPort = 21;
+    unsigned int dataPort = 8080;
 };
 
 class FTPServer {
@@ -49,7 +49,7 @@ private:
     
     int CreateSocket(int port);
     static FTPClient AcceptMessage(int listenFileDesc);
-    static void ManageRequest(FTPClient request);
+    static void ManageRequest(FTPClient &request);
 public:
     void InitServer(ServerOptions options);
     void ShutdownServer();

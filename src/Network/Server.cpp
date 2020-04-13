@@ -5,12 +5,6 @@
  */
 void FTPServer::InitServer(ServerOptions options) {
     this->options = options;
-
-    // thread commandThread([this](){ this->InitCommandServer(); });
-    // thread dataThread([this](){ this->InitCommandServer(); });
-    // commandThread.join();
-    // dataThread.join();
-
     this->InitCommandServer();
 }
 
@@ -18,19 +12,20 @@ void FTPServer::InitServer(ServerOptions options) {
  * Creating and responsing command socket
  */
 void FTPServer::InitCommandServer() try {
-    this->cmdFD = this->CreateSocket(this->options.cmd_port);
-    Logger::Info("Command server binded on port " + to_string(this->options.cmd_port));
+    this->cmdFD = this->CreateSocket(this->options.cmdPort);
+    Logger::Print(Logger::Levels::INFO, "Command server binded on port " + to_string(this->options.cmdPort));
 
     while (true) {
         // Waiting for new client
         FTPClient request = this->AcceptMessage(this->cmdFD);
-        Logger::Info("Connection accepted, address");
-
+        Logger::Print(Logger::Levels::INFO, "Connection accepted, address: " + request.GetClientAddress() + ":" + request.GetClientPort());
+        
         // Execution of async request manager
-        async(launch::async, this->ManageRequest, request);
+        thread manager([this](FTPClient &request){ this->ManageRequest(request); }, ref(request));
+        manager.detach();
     }
 } catch(runtime_error &error) {
-    Logger::Error(error.what());
+    Logger::Print(Logger::Levels::ERROR, error.what());
 }
 
 /**
@@ -44,7 +39,7 @@ void FTPServer::InitDataServer() {
  * Creation socket
  */
 int FTPServer::CreateSocket(int port) {
-    Logger::Progress progress = Logger::CreateTask("Creating socket", 3);
+    Logger::Contract progress = Logger::CreateTask("Creating socket", 3);
 
     // Creating socket file descriptor
     int serverFileDescriptor;
@@ -81,10 +76,10 @@ int FTPServer::CreateSocket(int port) {
 /**
  * Accepting user message from file descriptor
  */
-FTPClient FTPServer::AcceptMessage(int listenFileDescriptor) {
+FTPClient FTPServer::AcceptMessage(int listenConnDescriptor) {
     sockaddr_in clientAddress;
     socklen_t addrlen = sizeof(clientAddress);
-    int acceptedMessageDesc = accept(listenFileDescriptor, (sockaddr *)&clientAddress, &addrlen);
+    int acceptedMessageDesc = accept(listenConnDescriptor, (sockaddr *)&clientAddress, &addrlen);
     if (acceptedMessageDesc < 0) {
         throw runtime_error("Accepted message: failed");
     }
@@ -95,18 +90,19 @@ FTPClient FTPServer::AcceptMessage(int listenFileDescriptor) {
  * Request manager
  * @param request connection desctiptor
  */
-void FTPServer::ManageRequest(FTPClient request) {
+void FTPServer::ManageRequest(FTPClient &request) {
+    auto logger = Logger::SetPrefix(request.GetClientAddress() + ":" + request.GetClientPort());
     while (true) try {
         auto [code, cmd] = request.Read();
         string commandStringify = FTPCommand::GetCommand(code).value_or("NOOP");
 
-        Logger::Info("Client sent commmand " + commandStringify 
+        logger(Logger::Levels::INFO, "Client sent commmand " + commandStringify 
             + (cmd.size() ? " with operand " + cmd : " with no operand"));
 
     } catch(const logic_error& e) {
-        Logger::Error(e.what());
+        logger(Logger::Levels::ERROR, e.what());
     } catch(const runtime_error& e) {
-        Logger::Info("Lost connection with " + request.GetClientAddress() + ":" + request.GetClientPort());
+        logger(Logger::Levels::INFO, "Lost connection");
         return;
     }
 }

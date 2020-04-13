@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <string_view>
 #include <sstream>
 #include <iostream>
@@ -10,11 +11,18 @@ using namespace std;
 
 class Logger {
 public:
-    using Progress = function<void(string)>;
-    
-    static void Info(string_view message);
-    static void Warning(string_view message);
-    static void Error(string_view message);
+    enum class Levels { INFO, WARNING, ERROR };
+    static inline map<Levels, string> LevelsMap = {
+        { Levels::INFO, "INFO" },
+        { Levels::WARNING, "WARNING" },
+        { Levels::ERROR, "ERROR" },
+    };
 
-    static Progress CreateTask(string title, int numberOfTasks);
+    using Contract = function<void(string)>;
+    
+    static void Print(Levels level, string message);
+    static void PrintMessage(string message);
+    static function<void(Logger::Levels, string)> SetPrefix(string prefix);
+
+    static Contract CreateTask(string title, int numberOfTasks);
 };
