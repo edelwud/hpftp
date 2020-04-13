@@ -2,9 +2,11 @@
 
 #include <map>
 #include <string>
+#include <regex>
 #include <optional>
 
 #include "../Constants.h"
+#include "../Network/StatusCodes.h"
 
 using namespace std;
 
@@ -40,9 +42,14 @@ static map<string, FTPCommandList> FTPCommandListMap = {
     { "USER", FTPCommandList::USER }
 };
 
-class FTPCommandReader {
+/**
+ * @class 
+ * FTP command
+ * Packing and unpacking messages
+ */
+class FTPCommand {
 public:
-    static FTPCommandList Unpack(char data[MAX_BUFFER_SIZE]);
-    static void Pack(string data);
+    static pair<FTPCommandList, string> Unpack(string_view data);
+    static string Pack(StatusCodes code, string_view data);
     static optional<string> GetCommand(FTPCommandList command);
 };

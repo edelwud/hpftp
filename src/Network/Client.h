@@ -21,5 +21,10 @@ public:
     using Contract = tuple<FTPCommandList, string>;
 
     FTPClient(int descriptor, sockaddr_in client) : socketDesc(descriptor), client(client) {};
+
+    int GetClientDescriptor();
+    string GetClientAddress();
+    string GetClientPort();
+
     Contract Read();
 };

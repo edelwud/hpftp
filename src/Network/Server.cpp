@@ -93,14 +93,20 @@ FTPClient FTPServer::AcceptMessage(int listenFileDescriptor) {
 
 /**
  * Request manager
- * @param int connection desctiptor
+ * @param request connection desctiptor
  */
-void FTPServer::ManageRequest(FTPClient request) try {
-    auto [code, cmd] = request.Read();
-    
-    string commandStringify = FTPCommandReader::GetCommand(code).value_or("");
+void FTPServer::ManageRequest(FTPClient request) {
+    while (true) try {
+        auto [code, cmd] = request.Read();
+        string commandStringify = FTPCommand::GetCommand(code).value_or("NOOP");
 
-    Logger::Info("Client sent commmand " + commandStringify 
-        + (cmd.size() ? " with operand " + cmd : " with no operand"));
+        Logger::Info("Client sent commmand " + commandStringify 
+            + (cmd.size() ? " with operand " + cmd : " with no operand"));
 
-} catch(exception &e) { Logger::Error(e.what()); }
+    } catch(const logic_error& e) {
+        Logger::Error(e.what());
+    } catch(const runtime_error& e) {
+        Logger::Info("Lost connection with " + request.GetClientAddress() + ":" + request.GetClientPort());
+        return;
+    }
+}
