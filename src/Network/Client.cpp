@@ -13,7 +13,6 @@ FTPClient::Contract FTPClient::Read() {
     if (status == 0) {
         throw runtime_error("Connection closed");
     }
-    
     return FTPCommand::Unpack(buffer);
 }
 

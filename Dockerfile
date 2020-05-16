@@ -20,6 +20,6 @@ WORKDIR /usr/src/FTPServer/dist
 # Скопируем приложение со сборочного контейнера в рабочую директорию
 COPY --from=build /usr/src/FTPServer/dist .
 
-EXPOSE 8051
+EXPOSE 50505
 # Установим точку входа
 ENTRYPOINT ["./FTPServer"]

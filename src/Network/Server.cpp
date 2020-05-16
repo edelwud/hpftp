@@ -17,11 +17,11 @@ void FTPServer::InitCommandServer() try {
 
     while (true) {
         // Waiting for new client
-        FTPClient request = this->AcceptMessage(this->cmdFD);
+        FTPClient request = FTPServer::AcceptMessage(this->cmdFD);
         Logger::Print(Logger::Levels::INFO, "Connection accepted, address: " + request.GetClientAddress() + ":" + request.GetClientPort());
         
         // Execution of async request manager
-        thread manager([this](FTPClient &request){ this->ManageRequest(request); }, ref(request));
+        thread manager([this](FTPClient &request){ FTPServer::ManageRequest(request); }, ref(request));
         manager.detach();
     }
 } catch(runtime_error &error) {
@@ -29,7 +29,7 @@ void FTPServer::InitCommandServer() try {
 }
 
 /**
- * Creating and responsing data socket
+ * Creating and response data socket
  */
 void FTPServer::InitDataServer() {
     
@@ -38,7 +38,7 @@ void FTPServer::InitDataServer() {
 /**
  * Creation socket
  */
-int FTPServer::CreateSocket(int port) {
+int FTPServer::CreateSocket(int port) const {
     Logger::Contract progress = Logger::CreateTask("Creating socket", 3);
 
     // Creating socket file descriptor
@@ -77,7 +77,7 @@ int FTPServer::CreateSocket(int port) {
  * Accepting user message from file descriptor
  */
 FTPClient FTPServer::AcceptMessage(int listenConnDescriptor) {
-    sockaddr_in clientAddress;
+    sockaddr_in clientAddress{};
     socklen_t addrlen = sizeof(clientAddress);
     int acceptedMessageDesc = accept(listenConnDescriptor, (sockaddr *)&clientAddress, &addrlen);
     if (acceptedMessageDesc < 0) {
@@ -92,14 +92,23 @@ FTPClient FTPServer::AcceptMessage(int listenConnDescriptor) {
  */
 void FTPServer::ManageRequest(FTPClient &request) {
     auto logger = Logger::SetPrefix(request.GetClientAddress() + ":" + request.GetClientPort());
+
+    FTPResponse response(request);
+    response.Send(StatusCodes::SERVICE_READY, "Welcome\n");
+
     while (true) try {
         auto [code, cmd] = request.Read();
-        string commandStringify = FTPCommand::GetCommand(code).value_or("NOOP");
+        string commandStringify = FTPCommand::GetCommand(code);
 
-        logger(Logger::Levels::INFO, "Client sent commmand " + commandStringify 
-            + (cmd.size() ? " with operand " + cmd : " with no operand"));
+        logger(Logger::Levels::INFO, "Client sent command " + commandStringify
+            + (!cmd.empty() ? " with operand " + cmd : " with no operand"));
 
-    } catch(const logic_error& e) {
+        {
+            const [code, message] = Executor::Command(code, FTPCommand::ArgumentParse(cmd));
+            response.Send(code, message);
+        }
+
+        } catch(const logic_error& e) {
         logger(Logger::Levels::ERROR, e.what());
     } catch(const runtime_error& e) {
         logger(Logger::Levels::INFO, "Lost connection");

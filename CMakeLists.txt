@@ -21,6 +21,9 @@ add_executable(
     src/Command/Command.h
     src/Command/Command.cpp
 
+    src/Filesystem/Executor.h
+    src/Filesystem/Executor.cpp
+
     src/Logger.h
     src/Logger.cpp
 )
@@ -32,3 +35,5 @@ SET(THREADS_PREFER_PTHREAD_FLAG TRUE)
 FIND_PACKAGE(Threads REQUIRED)
 TARGET_LINK_LIBRARIES(FTPServer Threads::Threads)
 TARGET_COMPILE_OPTIONS(FTPServer INTERFACE Threads::Threads)
+
+target_link_libraries(FTPServer stdc++fs)

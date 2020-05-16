@@ -5,7 +5,7 @@
 using namespace std;
 
 int main() {
-    ServerOptions options = { 4, 8051 };
+    ServerOptions options = { 4, 50505 };
     FTPServer *server = new FTPServer();
     server->InitServer(options);
 

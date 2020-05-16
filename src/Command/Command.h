@@ -49,7 +49,9 @@ static map<string, FTPCommandList> FTPCommandListMap = {
  */
 class FTPCommand {
 public:
-    static pair<FTPCommandList, string> Unpack(string_view data);
-    static string Pack(StatusCodes code, string_view data);
-    static optional<string> GetCommand(FTPCommandList command);
+    static pair<FTPCommandList, string> Unpack(const string& data);
+    static string Pack(StatusCodes code, const string& data);
+
+    static vector<string> ArgumentParse(string arguments);
+    static string GetCommand(FTPCommandList command);
 };

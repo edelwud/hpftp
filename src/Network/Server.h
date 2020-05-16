@@ -27,8 +27,9 @@
 #include "Client.h"
 #include "Response.h"
 #include "StatusCodes.h"
-#include "../Command/Command.h"
 #include "../Logger.h"
+#include "../Command/Command.h"
+#include "../Filesystem/Executor.h"
 
 using namespace std;
 
@@ -47,7 +48,7 @@ private:
     void InitCommandServer();
     void InitDataServer();
     
-    int CreateSocket(int port);
+    int CreateSocket(int port) const;
     static FTPClient AcceptMessage(int listenFileDesc);
     static void ManageRequest(FTPClient &request);
 public:
