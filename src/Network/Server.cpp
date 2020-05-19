@@ -12,7 +12,7 @@ void FTPServer::InitServer(ServerOptions options) {
  * Creating and responsing command socket
  */
 void FTPServer::InitCommandServer() try {
-    this->cmdFD = this->CreateSocket(this->options.cmdPort);
+    this->cmdFD = CreateSocket(this->options.cmdPort, this->options.connections_queue);
     Logger::Print(Logger::Levels::INFO, "Command server binded on port " + to_string(this->options.cmdPort));
 
     while (true) {
@@ -38,7 +38,7 @@ void FTPServer::InitDataServer() {
 /**
  * Creation socket
  */
-int FTPServer::CreateSocket(int port) const {
+int FTPServer::CreateSocket(int port, int connectionsQueue) {
     Logger::Contract progress = Logger::CreateTask("Creating socket", 3);
 
     // Creating socket file descriptor
@@ -65,7 +65,7 @@ int FTPServer::CreateSocket(int port) const {
     progress("binding socket port options");
     
     // Listening incoming requests
-    if (listen(serverFileDescriptor, this->options.connections_queue) < 0) {
+    if (listen(serverFileDescriptor, connectionsQueue) < 0) {
         throw runtime_error("Listening on socket: failed");
     }
     progress("listening port");
@@ -92,23 +92,26 @@ FTPClient FTPServer::AcceptMessage(int listenConnDescriptor) {
  */
 void FTPServer::ManageRequest(FTPClient &request) {
     auto logger = Logger::SetPrefix(request.GetClientAddress() + ":" + request.GetClientPort());
+    string currentDir = "/home/user";
 
     FTPResponse response(request);
-    response.Send(StatusCodes::SERVICE_READY, "Welcome\n");
+    Executor executor(response, currentDir);
+
+    response.Send(StatusCodes::SERVICE_READY, "Welcome");
 
     while (true) try {
-        auto [code, cmd] = request.Read();
-        string commandStringify = FTPCommand::GetCommand(code);
+        auto [requested, cmd] = request.Read();
+        string commandStringify = FTPCommand::GetCommand(requested);
 
         logger(Logger::Levels::INFO, "Client sent command " + commandStringify
             + (!cmd.empty() ? " with operand " + cmd : " with no operand"));
 
-        {
-            const [code, message] = Executor::Command(code, FTPCommand::ArgumentParse(cmd));
-            response.Send(code, message);
-        }
+        auto [code, message] = executor.Command(requested, FTPCommand::ArgumentParse(cmd));
+        response.Send(code, message);
 
-        } catch(const logic_error& e) {
+    } catch(const logic_error& e) {
+        response.Send(StatusCodes::UNKNOWN, "Unknown command");
+
         logger(Logger::Levels::ERROR, e.what());
     } catch(const runtime_error& e) {
         logger(Logger::Levels::INFO, "Lost connection");

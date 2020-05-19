@@ -26,7 +26,7 @@ add_executable(
 
     src/Logger.h
     src/Logger.cpp
-)
+        src/Network/DataChannel.cpp src/Network/DataChannel.h src/Exception/LostConnection.h src/Exception/UndefinedCommand.h src/Exception/NotLogged.h src/Exception/NoDataConnection.h)
 
 set_property(TARGET FTPServer PROPERTY CXX_STANDARD 20)
 

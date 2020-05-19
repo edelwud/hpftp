@@ -10,13 +10,13 @@
  */
 pair<FTPCommandList, string> FTPCommand::Unpack(const string& data) {
     int size = data.size();
-    if (*(--data.end()) == '\n') size--;
-    const string& commandBuffer = data.substr(0, size);;
+    if (*(--data.end()) == '\n') size--, size--;
+    const string& commandBuffer = data.substr(0, size);
     regex commandParser("([A-Za-z]+)(?: +(.+))?");
     smatch match;
 
     if (!regex_match(commandBuffer, match, commandParser)) {
-        throw logic_error("Unable to search read string");
+        throw logic_error("Unable to search read string " + data);
     }
 
     if (match.empty()) {

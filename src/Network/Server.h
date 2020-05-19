@@ -42,16 +42,16 @@ struct ServerOptions {
 class FTPServer {
 private:
     ServerOptions options;
-    int cmdFD;
-    int dataFD;
+    int cmdFD{};
+    int dataFD{};
 
     void InitCommandServer();
     void InitDataServer();
     
-    int CreateSocket(int port) const;
     static FTPClient AcceptMessage(int listenFileDesc);
     static void ManageRequest(FTPClient &request);
 public:
+    static int CreateSocket(int port, int connectionsQueue);
     void InitServer(ServerOptions options);
     void ShutdownServer();
     unsigned int AddClientHandler(function<void(FTPClient, FTPResponse)> handler);
