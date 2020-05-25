@@ -1,5 +1,7 @@
 #include "Client.h"
 
+#include <iostream>
+
 /**
  * Reading and parsing client command
  */ 
@@ -13,6 +15,8 @@ FTPClient::Contract FTPClient::Read() const {
     if (status == 0) {
         throw runtime_error("Connection closed");
     }
+
+    wcout << "KEKS: " << buffer << endl;
     return FTPCommand::Unpack(buffer);
 }
 
@@ -48,8 +52,8 @@ int FTPClient::GetClientDescriptor() const {
  * Check current user
  * @return boolean
  */
-string FTPClient::IsAuthorized() const {
-    return this->username;
+bool FTPClient::IsAuthorized() const {
+    return this->authorized;
 }
 
 /**
@@ -57,14 +61,14 @@ string FTPClient::IsAuthorized() const {
  * @param username
  * @param password
  */
-bool FTPClient::Authorize(string username, string password) {
-    if (!this->IsAuthorized().empty()) {
-        throw logic_error("Already authorized");
+void FTPClient::Authorize() {
+    if (this->authorized) {
+        throw AlreadyDeclared();
     }
 
-    if (username == ANONYMOUS) {
-        this->SetAuthorized(ANONYMOUS);
-        return true;
+    if (this->username == ANONYMOUS) {
+        this->authorized = true;
+        return;
     }
 
     auto user = find(this->users.begin(), this->users.end(), make_pair(username, password));
@@ -72,13 +76,25 @@ bool FTPClient::Authorize(string username, string password) {
         throw logic_error("User not found");
     }
 
-    this->SetAuthorized((*user).first);
-    return true;
+    this->authorized = true;
+    return;
 }
 
-/**
- * Setter for user authorization flag
- */
-void FTPClient::SetAuthorized(string username) {
+
+void FTPClient::SetUsername(string username) {
     this->username = username;
+    if (this->username == ANONYMOUS) {
+        this->authorized = true;
+        return;
+    }
+    if (!this->password.empty()) {
+        this->Authorize();
+    }
+}
+
+void FTPClient::SetPassword(string password) {
+    this->password = password;
+    if (!this->username.empty()) {
+        this->Authorize();
+    }
 }

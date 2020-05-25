@@ -11,12 +11,14 @@
 #include <sys/ioctl.h>
 
 #include "../Command/Command.h"
+#include "../Exception/AlreadyDeclared.h"
 
 using namespace std;
 
-
 class FTPClient {
     string username = "";
+    string password = "";
+    bool authorized = false;
 
     int socketDesc;
     sockaddr_in client;
@@ -33,9 +35,11 @@ public:
     string GetClientAddress();
     string GetClientPort() const;
 
-    void SetAuthorized(string username);
-    string IsAuthorized() const;
-    bool Authorize(string username, string password);
+    bool IsAuthorized() const;
+
+    void Authorize();
+    void SetUsername(string username);
+    void SetPassword(string password);
 
     Contract Read() const;
 };

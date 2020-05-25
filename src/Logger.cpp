@@ -22,7 +22,7 @@ Logger::Contract Logger::CreateTask(string title, int numberOfTasks) {
     logFile << "Task: " << title << endl;
     cout << "Task: " << title << endl;
     logFile.close();
-    
+
     return [=](string completedTask) {
         static int currentTask = 0;
         stringstream stream;

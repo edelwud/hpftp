@@ -8,6 +8,8 @@
 #include "../Constants.h"
 #include "../Network/StatusCodes.h"
 
+#include "../Exception/UndefinedCommand.h"
+
 using namespace std;
 
 enum class FTPCommandList {
@@ -23,7 +25,7 @@ enum class FTPCommandList {
     RMD, /* Abort file loading */                       RNFR, /* Abort file loading */ 
     SIZE, /* Abort file loading */                      STOR, /* Abort file loading */ 
     SYST, /* Abort file loading */                      TYPE, /* Abort file loading */ 
-    USER, /* Abort file loading */ 
+    USER, /* Abort file loading */                      AUTH
 };
 
 static map<string, FTPCommandList> FTPCommandListMap = {
@@ -39,7 +41,12 @@ static map<string, FTPCommandList> FTPCommandListMap = {
     { "RMD", FTPCommandList::RMD },{ "RNFR", FTPCommandList::RNFR },
     { "SIZE", FTPCommandList::SIZE },{ "STOR", FTPCommandList::STOR },
     { "SYST", FTPCommandList::SYST },{ "TYPE", FTPCommandList::TYPE },
-    { "USER", FTPCommandList::USER }
+    { "USER", FTPCommandList::USER }, { "AUTH", FTPCommandList::AUTH }
+};
+
+static map<string, FTPCommandList> notLoggedAllowed = {
+        { "USER", FTPCommandList::USER },
+        { "PASS", FTPCommandList::PASS }
 };
 
 /**
@@ -49,7 +56,7 @@ static map<string, FTPCommandList> FTPCommandListMap = {
  */
 class FTPCommand {
 public:
-    static pair<FTPCommandList, string> Unpack(const string& data);
+    static pair<FTPCommandList, string> Unpack(string data);
     static string Pack(StatusCodes code, const string& data);
 
     static vector<string> ArgumentParse(string arguments);

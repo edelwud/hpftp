@@ -31,8 +31,16 @@ void FTPServer::InitCommandServer() try {
 /**
  * Creating and response data socket
  */
-void FTPServer::InitDataServer() {
-    
+void FTPServer::InitDataServer() try {
+    srand(time(0));
+//    dataPort = rand() % (65536 - 40000) + 40000;
+    dataPort = 50506;
+    dataFD = CreateSocket(dataPort, 10);
+    dataChannelInitialized = true;
+
+    Logger::Print(Logger::Levels::INFO, "Data channel binded on port " + to_string(dataPort));
+} catch(runtime_error &error) {
+    Logger::Print(Logger::Levels::ERROR, error.what());
 }
 
 /**
@@ -88,14 +96,14 @@ FTPClient FTPServer::AcceptMessage(int listenConnDescriptor) {
 
 /**
  * Request manager
- * @param request connection desctiptor
+ * @param request connection descriptor
  */
 void FTPServer::ManageRequest(FTPClient &request) {
     auto logger = Logger::SetPrefix(request.GetClientAddress() + ":" + request.GetClientPort());
     string currentDir = "/home/user";
 
     FTPResponse response(request);
-    Executor executor(response, currentDir);
+    Executor executor(request, currentDir);
 
     response.Send(StatusCodes::SERVICE_READY, "Welcome");
 
@@ -103,18 +111,51 @@ void FTPServer::ManageRequest(FTPClient &request) {
         auto [requested, cmd] = request.Read();
         string commandStringify = FTPCommand::GetCommand(requested);
 
+        if (!request.IsAuthorized()) {
+            if (notLoggedAllowed.end() == notLoggedAllowed.find(commandStringify)) {
+                throw NotLogged();
+            }
+        }
+
         logger(Logger::Levels::INFO, "Client sent command " + commandStringify
             + (!cmd.empty() ? " with operand " + cmd : " with no operand"));
 
         auto [code, message] = executor.Command(requested, FTPCommand::ArgumentParse(cmd));
         response.Send(code, message);
 
-    } catch(const logic_error& e) {
+    } catch (UndefinedCommand) {
         response.Send(StatusCodes::UNKNOWN, "Unknown command");
-
-        logger(Logger::Levels::ERROR, e.what());
+    } catch (NoDataConnection) {
+        response.Send(StatusCodes::NO_DATA_CONNECTION, "No data connection opened");
+    } catch (NotLogged) {
+        response.Send(StatusCodes::NO_ACCESS, "No access to user this command");
+    } catch (AlreadyDeclared) {
+        response.Send(StatusCodes::UNKNOWN, "User already logged");
+    } catch (logic_error error) {
+        response.Send(StatusCodes::UNKNOWN, error.what());
     } catch(const runtime_error& e) {
         logger(Logger::Levels::INFO, "Lost connection");
         return;
+    } catch (...) {
+        response.Send(StatusCodes::UNKNOWN, "Undefined behavior");
     }
+}
+
+void FTPServer::SendBinary(string message) {
+    FTPClient request = FTPServer::AcceptMessage(FTPServer::dataFD);
+
+    Logger::Print(Logger::Levels::INFO, "Somebody with ip " + request.GetClientAddress() + " connected");
+
+    int descriptor = FTPServer::dataFD;
+    char *buffer = const_cast<char *>(message.data());
+
+    write(request.GetClientDescriptor(), (void*)buffer, message.size());
+
+    close(request.GetClientDescriptor());
+}
+
+void FTPServer::CloseDataServer() {
+    dataPort = 0;
+    dataChannelInitialized = false;
+    close(dataFD);
 }

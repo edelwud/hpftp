@@ -26,9 +26,18 @@ add_executable(
 
     src/Logger.h
     src/Logger.cpp
-        src/Network/DataChannel.cpp src/Network/DataChannel.h src/Exception/LostConnection.h src/Exception/UndefinedCommand.h src/Exception/NotLogged.h src/Exception/NoDataConnection.h)
 
-set_property(TARGET FTPServer PROPERTY CXX_STANDARD 20)
+    src/Network/DataChannel.cpp
+    src/Network/DataChannel.h
+
+    src/Exception/LostConnection.h
+    src/Exception/UndefinedCommand.h
+    src/Exception/NotLogged.h
+    src/Exception/NoDataConnection.h
+    src/Exception/AlreadyDeclared.h
+    src/Exception/LoggedSuccessfully.h)
+
+set_property(TARGET FTPServer PROPERTY CXX_STANDARD 14)
 
 # including pthread.h library
 SET(THREADS_PREFER_PTHREAD_FLAG TRUE)

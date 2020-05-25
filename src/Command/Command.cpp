@@ -1,6 +1,24 @@
 #include "Command.h"
 
-#include <iostream>
+// trim from start (in place)
+static inline void ltrim(std::string &s) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+        return !std::isspace(ch) && ch != '\n';
+    }));
+}
+
+// trim from end (in place)
+static inline void rtrim(std::string &s) {
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+        return !std::isspace(ch) && ch != '\n';
+    }).base(), s.end());
+}
+
+// trim from both ends (in place)
+static inline void trim(std::string &s) {
+    ltrim(s);
+    rtrim(s);
+}
 
 /**
  * Unpack
@@ -8,26 +26,24 @@
  * @param data inputted string
  * @return FTP command, args
  */
-pair<FTPCommandList, string> FTPCommand::Unpack(const string& data) {
-    int size = data.size();
-    if (*(--data.end()) == '\n') size--, size--;
-    const string& commandBuffer = data.substr(0, size);
+pair<FTPCommandList, string> FTPCommand::Unpack(string data) {
+    trim(data);
     regex commandParser("([A-Za-z]+)(?: +(.+))?");
     smatch match;
 
-    if (!regex_match(commandBuffer, match, commandParser)) {
-        throw logic_error("Unable to search read string " + data);
+    if (!regex_match(data, match, commandParser)) {
+        throw UndefinedCommand();
     }
 
     if (match.empty()) {
-        throw logic_error("Read command not specificed");
+        throw UndefinedCommand();
     }
 
     string command = match.str(1);
     for_each(command.begin(), command.end(), [](char &element){ element = toupper(element); });
     
     if (FTPCommandListMap.find(command) == FTPCommandListMap.end()) {
-        throw logic_error("Cannot identify client command");
+        throw UndefinedCommand();
     }
 
     return { FTPCommandListMap[command], match.str(2) };

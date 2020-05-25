@@ -31,6 +31,10 @@
 #include "../Command/Command.h"
 #include "../Filesystem/Executor.h"
 
+#include "../Exception/NotLogged.h"
+#include "../Exception/NoDataConnection.h"
+#include "../Exception/UndefinedCommand.h"
+
 using namespace std;
 
 struct ServerOptions {
@@ -43,17 +47,20 @@ class FTPServer {
 private:
     ServerOptions options;
     int cmdFD{};
-    int dataFD{};
 
     void InitCommandServer();
-    void InitDataServer();
-    
-    static FTPClient AcceptMessage(int listenFileDesc);
     static void ManageRequest(FTPClient &request);
 public:
+    static FTPClient AcceptMessage(int listenFileDesc);
+
+    static inline int dataFD{};
+    static inline int dataPort{};
+    static inline bool dataChannelInitialized = false;
+
+    static void InitDataServer();
+    static void SendBinary(string buffer);
+    static void CloseDataServer();
+
     static int CreateSocket(int port, int connectionsQueue);
     void InitServer(ServerOptions options);
-    void ShutdownServer();
-    unsigned int AddClientHandler(function<void(FTPClient, FTPResponse)> handler);
-    void RemoveClientHandler(unsigned int handler_id);
 };
