@@ -109,6 +109,9 @@ void FTPServer::ManageRequest(FTPClient &request) {
 
     while (true) try {
         auto [requested, cmd] = request.Read();
+        if (requested == FTPCommandList::NOOP)
+            continue;
+
         string commandStringify = FTPCommand::GetCommand(requested);
 
         if (!request.IsAuthorized()) {
@@ -120,7 +123,7 @@ void FTPServer::ManageRequest(FTPClient &request) {
         logger(Logger::Levels::INFO, "Client sent command " + commandStringify
             + (!cmd.empty() ? " with operand " + cmd : " with no operand"));
 
-        auto [code, message] = executor.Command(requested, FTPCommand::ArgumentParse(cmd));
+        auto [code, message] = executor.Command(requested, cmd);
         response.Send(code, message);
 
     } catch (UndefinedCommand) {
@@ -142,15 +145,13 @@ void FTPServer::ManageRequest(FTPClient &request) {
 }
 
 void FTPServer::SendBinary(string message) {
-    FTPClient request = FTPServer::AcceptMessage(FTPServer::dataFD);
+    FTPClient request = AcceptMessage(dataFD);
 
     Logger::Print(Logger::Levels::INFO, "Somebody with ip " + request.GetClientAddress() + " connected");
 
-    int descriptor = FTPServer::dataFD;
     char *buffer = const_cast<char *>(message.data());
 
     write(request.GetClientDescriptor(), (void*)buffer, message.size());
-
     close(request.GetClientDescriptor());
 }
 
@@ -158,4 +159,15 @@ void FTPServer::CloseDataServer() {
     dataPort = 0;
     dataChannelInitialized = false;
     close(dataFD);
+}
+
+void FTPServer::ReceiveBinary(char dest[MAX_BUFFER_SIZE]) {
+    FTPClient request = AcceptMessage(dataFD);
+
+    Logger::Print(Logger::Levels::INFO, "Receive user binary.");
+
+    read(request.GetClientDescriptor(), dest, MAX_BINARY_SIZE);
+    close(request.GetClientDescriptor());
+
+    Logger::Print(Logger::Levels::INFO, "Receive user binary completed");
 }

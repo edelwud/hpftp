@@ -1,6 +1,7 @@
 #include "Client.h"
 
 #include <iostream>
+#include <iconv.h>
 
 /**
  * Reading and parsing client command
@@ -15,8 +16,6 @@ FTPClient::Contract FTPClient::Read() const {
     if (status == 0) {
         throw runtime_error("Connection closed");
     }
-
-    wcout << "KEKS: " << buffer << endl;
     return FTPCommand::Unpack(buffer);
 }
 

@@ -1,19 +1,21 @@
 #include "Executor.h"
 
-pair<StatusCodes, string> Executor::Command(FTPCommandList code, vector<string> arguments) {
+pair<StatusCodes, string> Executor::Command(FTPCommandList code, string argument) {
     switch (code) {
     case FTPCommandList::CWD: {
-        if (arguments.empty()) this->CWD("/");
-        else this->CWD(arguments[0]);
-        string currPath = fs::current_path();
-        return { StatusCodes::DIRECTORY_CHANGED, "Current path: " + currPath };
+        if (argument.empty()) this->CWD("/");
+        else this->CWD(argument);
+        return { StatusCodes::DIRECTORY_CHANGED, "Current path: " + this->currentPath };
     }
     case FTPCommandList::ABOR:
         break;
     case FTPCommandList::CDUP:
         break;
-    case FTPCommandList::DELE:
-        break;
+    case FTPCommandList::DELE: {
+        string base = this->currentPath + '/' + argument;
+        this->exec("rm -R \"" + base + "\"");
+        return { StatusCodes::DIRECTORY_CHANGED, "Ok." };
+    }
     case FTPCommandList::EPSV:
         FTPServer::InitDataServer();
         return { StatusCodes::EXTENDING_PASSIVE, "Entering Extended Passive Mode (|||" + to_string(FTPServer::dataPort) + "|)." };
@@ -25,14 +27,18 @@ pair<StatusCodes, string> Executor::Command(FTPCommandList code, vector<string> 
 
     case FTPCommandList::MDTM:
         break;
-    case FTPCommandList::MKD:
-        break;
+    case FTPCommandList::MKD: {
+        string base = this->currentPath + '/' + argument;
+        this->exec("mkdir \"" + base + "\"");
+        return { StatusCodes::DIR_MADE, "Directory created" };
+    }
     case FTPCommandList::NLST:
         break;
     case FTPCommandList::NOOP:
         break;
     case FTPCommandList::PASS:
-        this->PASS(arguments[0]);
+        if (argument.empty()) break;
+        this->PASS(argument);
         if (this->client.IsAuthorized()) {
             return { StatusCodes::LOGIN_SUCCESSFUL, "Login successful" };
         }
@@ -54,42 +60,63 @@ pair<StatusCodes, string> Executor::Command(FTPCommandList code, vector<string> 
     case FTPCommandList::REIN:
         break;
     case FTPCommandList::RETR:
-        if (arguments[0].empty()) {
+        if (argument.empty()) {
             return { StatusCodes::UNKNOWN, "Please, specify filename." };
         }
-        this->RETR(arguments[0]);
+        this->RETR(argument);
         break;
-    case FTPCommandList::RMD:
+    case FTPCommandList::RMD: {
+        string base = this->currentPath + '/' + argument;
+        this->exec("rm -R \"" + base + "\"");
         break;
-    case FTPCommandList::RNFR:
-        break;
+    }
+    case FTPCommandList::RNFR: {
+        this->renameFrom = this->currentPath + '/' + argument;
+        return { StatusCodes::RENAME_FROM, "Renaming accepted" };
+    }
     case FTPCommandList::SIZE:
         break;
-    case FTPCommandList::STOR:
-        break;
+    case FTPCommandList::STOR: {
+        if (!FTPServer::dataChannelInitialized) {
+            throw NoDataConnection();
+        }
+        string base = this->currentPath + "/" + argument;
+        this->exec("touch \"" + base + "\"");
+        fstream file(base);
+
+        string message = to_string((int)StatusCodes::OPENED_CHANNEL) + " Ok.\n";
+        write(this->client.GetClientDescriptor(), (void *)message.data(), message.size());
+
+        char buffer[MAX_BINARY_SIZE];
+        FTPServer::ReceiveBinary(buffer);
+        FTPServer::CloseDataServer();
+
+        file << buffer;
+        file.close();
+
+        return { StatusCodes::FILE_RECEIVE, "File receive OK." };
+    }
     case FTPCommandList::SYST:
         break;
     case FTPCommandList::TYPE:
         break;
     case FTPCommandList::USER:
-        this->USER(arguments[0]);
+        this->USER(argument);
         if (this->client.IsAuthorized()) {
             return { StatusCodes::LOGIN_SUCCESSFUL, "Login successful" };
         }
         return { StatusCodes::SPECIFY_PASSWORD, "Please, specify the password" };
+    case FTPCommandList::RNTO: {
+        string base = this->currentPath + '/' + argument;
+        this->exec("mv \"" + this->renameFrom + "\" \"" + base + "\"");
+    }
     }
 
     return { StatusCodes::SERVICE_READY, "Ok." };
 }
 
 void Executor::CWD(string path) {
-    string temp = this->currentPath;
     this->currentPath = path;
-    try {
-        fs::current_path(this->currentPath);
-    } catch (...) {
-        this->currentPath = temp;
-    }
 }
 
 void Executor::LIST() {
@@ -97,7 +124,7 @@ void Executor::LIST() {
         throw NoDataConnection();
     }
 
-    string result = this->exec("ls -all");
+    string result = this->exec("ls \"" + this->currentPath + "\" -all");
 
     FTPServer::SendBinary(result);
     FTPServer::CloseDataServer();

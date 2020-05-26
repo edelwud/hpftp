@@ -25,7 +25,8 @@ enum class FTPCommandList {
     RMD, /* Abort file loading */                       RNFR, /* Abort file loading */ 
     SIZE, /* Abort file loading */                      STOR, /* Abort file loading */ 
     SYST, /* Abort file loading */                      TYPE, /* Abort file loading */ 
-    USER, /* Abort file loading */                      AUTH
+    USER, /* Abort file loading */                      AUTH,
+    RNTO
 };
 
 static map<string, FTPCommandList> FTPCommandListMap = {
@@ -41,7 +42,8 @@ static map<string, FTPCommandList> FTPCommandListMap = {
     { "RMD", FTPCommandList::RMD },{ "RNFR", FTPCommandList::RNFR },
     { "SIZE", FTPCommandList::SIZE },{ "STOR", FTPCommandList::STOR },
     { "SYST", FTPCommandList::SYST },{ "TYPE", FTPCommandList::TYPE },
-    { "USER", FTPCommandList::USER }, { "AUTH", FTPCommandList::AUTH }
+    { "USER", FTPCommandList::USER }, { "AUTH", FTPCommandList::AUTH },
+    { "RNTO", FTPCommandList::RNTO }
 };
 
 static map<string, FTPCommandList> notLoggedAllowed = {

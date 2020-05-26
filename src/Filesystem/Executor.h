@@ -16,11 +16,12 @@ namespace fs = std::experimental::filesystem;
 class Executor {
     FTPClient& client;
     string currentPath;
+    string renameFrom;
 
-    string exec(const char* cmd) {
+    string exec(string cmd) {
         array<char, 128> buffer;
         string result;
-        unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+        unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
         if (!pipe) {
             throw runtime_error("popen() failed!");
         }
@@ -34,7 +35,7 @@ public:
         fs::current_path(path);
     };
 
-    pair<StatusCodes, string> Command(FTPCommandList code, vector<string> arguments);
+    pair<StatusCodes, string> Command(FTPCommandList code, string argument);
 
     void CWD(string path);
     void LIST();

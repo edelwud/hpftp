@@ -7,7 +7,7 @@
  */
 void FTPResponse::Send(StatusCodes code, string message) {
     stringstream output;
-    output << (int)code << ' ' << message << endl;
+    output << (int)code << ' ' << message << '\n';
 
     int descriptor = this->request.GetClientDescriptor();
     char *buffer = const_cast<char *>(output.str().data());
