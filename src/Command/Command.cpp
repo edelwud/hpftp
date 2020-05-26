@@ -1,4 +1,5 @@
 #include "Command.h"
+#include "../Logger.h"
 
 // trim from start (in place)
 static inline void ltrim(std::string &s) {
@@ -32,6 +33,7 @@ pair<FTPCommandList, string> FTPCommand::Unpack(string data) {
     smatch match;
 
     if (!regex_match(data, match, commandParser)) {
+        Logger::Print(Logger::Levels::INFO, "AHAHAHAH: " + data);
         throw UndefinedCommand();
     }
 

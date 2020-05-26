@@ -59,6 +59,7 @@ public:
 
     static void InitDataServer();
     static void SendBinary(string buffer);
+    static void ReceiveBinary(char buffer[MAX_BINARY_SIZE]);
     static void CloseDataServer();
 
     static int CreateSocket(int port, int connectionsQueue);
