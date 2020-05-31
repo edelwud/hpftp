@@ -15,8 +15,8 @@ namespace fs = std::experimental::filesystem;
 
 class Executor {
     FTPClient& client;
-    string currentPath;
     string renameFrom;
+    bool binary = false;
 
     string exec(string cmd) {
         array<char, 128> buffer;
@@ -30,9 +30,13 @@ class Executor {
         }
         return result;
     }
+    bool exists(const fs::path& p, fs::file_status s = fs::file_status{}) {
+        return fs::status_known(s) ? fs::exists(s) : fs::exists(p);
+    }
 public:
-    explicit Executor(FTPClient& request, string path) : client(request), currentPath(path) {
-        fs::current_path(path);
+    explicit Executor(FTPClient& request, string path) : client(request) {
+        this->client.currentPath = path;
+        this->client.homeDir = path;
     };
 
     pair<StatusCodes, string> Command(FTPCommandList code, string argument);

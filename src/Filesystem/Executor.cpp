@@ -5,15 +5,25 @@ pair<StatusCodes, string> Executor::Command(FTPCommandList code, string argument
     case FTPCommandList::CWD: {
         if (argument.empty()) this->CWD("/");
         else this->CWD(argument);
-        return { StatusCodes::DIRECTORY_CHANGED, "Current path: " + this->currentPath };
+        return { StatusCodes::DIRECTORY_CHANGED, "Current path: " + this->client.currentPath };
     }
     case FTPCommandList::ABOR:
+        FTPServer::CloseDataServer();
         break;
-    case FTPCommandList::CDUP:
-        break;
+
+    case FTPCommandList::CDUP: {
+        fs::path path = this->client.currentPath;
+        cout << "DEBUG" << path.parent_path() << endl;
+        this->CWD(path.parent_path());
+        return { StatusCodes::DIRECTORY_CHANGED, "Current path: " + this->client.currentPath };
+    }
+
     case FTPCommandList::DELE: {
-        string base = this->currentPath + '/' + argument;
-        this->exec("rm -R \"" + base + "\"");
+        string base = this->client.currentPath + '/' + argument;
+        if (!this->exists(base)) {
+            throw UndefinedCommand();
+        }
+        this->exec("rm -f \"" + base + "\"");
         return { StatusCodes::DIRECTORY_CHANGED, "Ok." };
     }
     case FTPCommandList::EPSV:
@@ -28,7 +38,10 @@ pair<StatusCodes, string> Executor::Command(FTPCommandList code, string argument
     case FTPCommandList::MDTM:
         break;
     case FTPCommandList::MKD: {
-        string base = this->currentPath + '/' + argument;
+        string base = this->client.currentPath + '/' + argument;
+        if (this->exists(base)) {
+            throw UndefinedCommand();
+        }
         this->exec("mkdir \"" + base + "\"");
         return { StatusCodes::DIR_MADE, "Directory created" };
     }
@@ -54,7 +67,7 @@ pair<StatusCodes, string> Executor::Command(FTPCommandList code, string argument
     case FTPCommandList::PORT:
         break;
     case FTPCommandList::PWD:
-        return { StatusCodes::CURRENT_PATH, "\""+this->currentPath+"\"" };
+        return { StatusCodes::CURRENT_PATH, "\""+this->client.currentPath+"\"" };
     case FTPCommandList::QUIT:
         break;
     case FTPCommandList::REIN:
@@ -66,12 +79,12 @@ pair<StatusCodes, string> Executor::Command(FTPCommandList code, string argument
         this->RETR(argument);
         break;
     case FTPCommandList::RMD: {
-        string base = this->currentPath + '/' + argument;
-        this->exec("rm -R \"" + base + "\"");
+        string base = this->client.currentPath + '/' + argument;
+        this->exec("rm -rf \"" + base + "\"");
         break;
     }
     case FTPCommandList::RNFR: {
-        this->renameFrom = this->currentPath + '/' + argument;
+        this->renameFrom = this->client.currentPath + '/' + argument;
         return { StatusCodes::RENAME_FROM, "Renaming accepted" };
     }
     case FTPCommandList::SIZE:
@@ -80,15 +93,16 @@ pair<StatusCodes, string> Executor::Command(FTPCommandList code, string argument
         if (!FTPServer::dataChannelInitialized) {
             throw NoDataConnection();
         }
-        string base = this->currentPath + "/" + argument;
+        string base = this->client.currentPath + "/" + argument;
         this->exec("touch \"" + base + "\"");
-        fstream file(base);
+        fstream file;
+        this->binary ? file.open(base, ios::binary) : file.open(base);
 
         string message = to_string((int)StatusCodes::OPENED_CHANNEL) + " Ok.\n";
         write(this->client.GetClientDescriptor(), (void *)message.data(), message.size());
 
-        char buffer[MAX_BINARY_SIZE];
-        FTPServer::ReceiveBinary(buffer);
+        char *buffer = new char[MAX_BINARY_SIZE];
+        FTPServer::ReceiveBinary(buffer, MAX_BINARY_SIZE);
         FTPServer::CloseDataServer();
 
         file << buffer;
@@ -99,6 +113,7 @@ pair<StatusCodes, string> Executor::Command(FTPCommandList code, string argument
     case FTPCommandList::SYST:
         break;
     case FTPCommandList::TYPE:
+        this->binary = argument == "I";
         break;
     case FTPCommandList::USER:
         this->USER(argument);
@@ -107,7 +122,7 @@ pair<StatusCodes, string> Executor::Command(FTPCommandList code, string argument
         }
         return { StatusCodes::SPECIFY_PASSWORD, "Please, specify the password" };
     case FTPCommandList::RNTO: {
-        string base = this->currentPath + '/' + argument;
+        string base = this->client.currentPath + '/' + argument;
         this->exec("mv \"" + this->renameFrom + "\" \"" + base + "\"");
     }
     }
@@ -116,7 +131,17 @@ pair<StatusCodes, string> Executor::Command(FTPCommandList code, string argument
 }
 
 void Executor::CWD(string path) {
-    this->currentPath = path;
+    auto iter = find(path.begin(), path.end(), '/');
+
+    string prevPath = this->client.currentPath;
+    iter != path.end() ?
+        this->client.currentPath = path :
+        this->client.currentPath += '/' + path;
+    if (!this->exists(this->client.currentPath)) {
+        Logger::Print(Logger::Levels::ERROR, path);
+        this->client.currentPath = prevPath;
+        throw UndefinedCommand();
+    }
 }
 
 void Executor::LIST() {
@@ -124,9 +149,9 @@ void Executor::LIST() {
         throw NoDataConnection();
     }
 
-    string result = this->exec("ls \"" + this->currentPath + "\" -all");
+    string result = this->exec("ls \"" + this->client.currentPath + "\" -all");
 
-    FTPServer::SendBinary(result);
+    FTPServer::SendBinary(const_cast<char *>(result.data()), result.size());
     FTPServer::CloseDataServer();
 }
 
@@ -155,12 +180,16 @@ void Executor::RETR(string filename) {
         throw NoDataConnection();
     }
 
-    fstream fs(this->currentPath + "/" + filename);
+    fstream fs;
+    this->binary ?
+        fs.open(this->client.currentPath + "/" + filename, ios::binary) :
+        fs.open(this->client.currentPath + "/" + filename);
+
     int size = fs.rdbuf()->in_avail();
     char *buffer = new char[size];
     fs.read(buffer, size);
 
-    FTPServer::SendBinary(buffer);
+    FTPServer::SendBinary(buffer, size);
     FTPServer::CloseDataServer();
 
     delete[] buffer;

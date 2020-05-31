@@ -16,7 +16,7 @@
 #include <pwd.h>
 #include <netinet/in.h>
 #include <time.h>
-  
+
 #include <arpa/inet.h>   
 #include <sys/time.h>
 
@@ -50,16 +50,17 @@ private:
 
     void InitCommandServer();
     static void ManageRequest(FTPClient &request);
+    static bool SetNonBlocking(int descriptor, bool blocking);
 public:
-    static FTPClient AcceptMessage(int listenFileDesc);
+    static FTPClient AcceptMessage(int listenFileDesc, bool blocking);
 
     static inline int dataFD{};
     static inline int dataPort{};
     static inline bool dataChannelInitialized = false;
 
     static void InitDataServer();
-    static void SendBinary(string buffer);
-    static void ReceiveBinary(char buffer[MAX_BINARY_SIZE]);
+    static void SendBinary(char* buffer, int size);
+    static void ReceiveBinary(char *buffer, int size);
     static void CloseDataServer();
 
     static int CreateSocket(int port, int connectionsQueue);

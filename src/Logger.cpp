@@ -12,7 +12,7 @@ void Logger::PrintMessage(string message) {
 
 void Logger::Print(Levels level, string message) {
     string result = LevelsMap[level];
-    result += ":";
+    result += ": ";
     result += message;
     PrintMessage(result);
 }
@@ -27,10 +27,11 @@ Logger::Contract Logger::CreateTask(string title, int numberOfTasks) {
         static int currentTask = 0;
         stringstream stream;
 
-        if (numberOfTasks < currentTask)
-            return;
-
         stream << title << " [" << ++currentTask << '/' << numberOfTasks << "]: " << completedTask << endl;
+        if (currentTask == numberOfTasks) {
+            currentTask = 0;
+            stream << title << " completed" << endl;
+        }
 
         ofstream logFile("task_log.txt", ios::app);
         logFile << stream.str();
@@ -43,7 +44,7 @@ Logger::Contract Logger::CreateTask(string title, int numberOfTasks) {
 
 function<void(Logger::Levels, string)> Logger::SetPrefix(string prefix) {
     return [=](Logger::Levels level, string message){
-        string result = " [" + prefix + "] " + message;
+        string result = "[" + prefix + "] " + message;
         Logger::Print(level, result);
     };
 }

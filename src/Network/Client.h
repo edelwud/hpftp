@@ -23,10 +23,13 @@ class FTPClient {
     int socketDesc;
     sockaddr_in client;
 
-    vector<pair<string, string>> users = {
+    map<string, string> users = {
             { "edelwud", "123" }
     };
 public:
+    string homeDir;
+    string currentPath;
+
     using Contract = tuple<FTPCommandList, string>;
 
     FTPClient(int descriptor, sockaddr_in client) : socketDesc(descriptor), client(client) {};

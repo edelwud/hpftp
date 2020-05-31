@@ -5,7 +5,7 @@
  * code - status code
  * message - message to client
  */
-void FTPResponse::Send(StatusCodes code, string message) {
+void FTPResponse::Send(StatusCodes code, string message) const {
     stringstream output;
     output << (int)code << ' ' << message << '\n';
 
@@ -16,7 +16,7 @@ void FTPResponse::Send(StatusCodes code, string message) {
 }
 
 void FTPResponse::SendBinary(string message) {
-    FTPClient request = FTPServer::AcceptMessage(FTPServer::dataFD);
+    FTPClient request = FTPServer::AcceptMessage(FTPServer::dataFD, false);
 
     Logger::Print(Logger::Levels::INFO, "Somebody with ip " + request.GetClientAddress() + " connected");
 

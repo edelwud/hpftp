@@ -70,8 +70,14 @@ void FTPClient::Authorize() {
         return;
     }
 
-    auto user = find(this->users.begin(), this->users.end(), make_pair(username, password));
+    auto user = users.find(this->username);
     if (user == this->users.end()) {
+        throw logic_error("User not found");
+    }
+
+    auto [username, password] = *user;
+
+    if (this->password != password) {
         throw logic_error("User not found");
     }
 

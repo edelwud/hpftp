@@ -20,7 +20,7 @@ private:
 public:
     explicit FTPResponse(FTPClient& req) : request(req) {};
 
-    void Send(StatusCodes code, string message);
+    void Send(StatusCodes code, string message) const;
 
     void SendBinary(string message);
 };

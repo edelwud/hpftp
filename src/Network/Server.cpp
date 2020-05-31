@@ -17,7 +17,7 @@ void FTPServer::InitCommandServer() try {
 
     while (true) {
         // Waiting for new client
-        FTPClient request = FTPServer::AcceptMessage(this->cmdFD);
+        FTPClient request = FTPServer::AcceptMessage(this->cmdFD, true);
         Logger::Print(Logger::Levels::INFO, "Connection accepted, address: " + request.GetClientAddress() + ":" + request.GetClientPort());
         
         // Execution of async request manager
@@ -38,7 +38,9 @@ void FTPServer::InitDataServer() try {
     dataFD = CreateSocket(dataPort, 10);
     dataChannelInitialized = true;
 
-    Logger::Print(Logger::Levels::INFO, "Data channel binded on port " + to_string(dataPort));
+    auto logger = Logger::SetPrefix("Datachannel");
+
+    logger(Logger::Levels::INFO, "binded on port " + to_string(dataPort));
 } catch(runtime_error &error) {
     Logger::Print(Logger::Levels::ERROR, error.what());
 }
@@ -52,9 +54,9 @@ int FTPServer::CreateSocket(int port, int connectionsQueue) {
     // Creating socket file descriptor
     int serverFileDescriptor;
     if ((serverFileDescriptor = socket(AF_INET, SOCK_STREAM, 0)) == 0) { 
-        throw runtime_error("Creating socket file descriptor: failed");
+        throw runtime_error("Creating socket descriptor: failed");
     }
-    progress("creating socket file descriptor");
+    progress("creating socket descriptor");
 
     // Reusing socket after program exit
     int reuse = 1;
@@ -84,12 +86,20 @@ int FTPServer::CreateSocket(int port, int connectionsQueue) {
 /**
  * Accepting user message from file descriptor
  */
-FTPClient FTPServer::AcceptMessage(int listenConnDescriptor) {
+FTPClient FTPServer::AcceptMessage(int listenConnDescriptor, bool blocking) {
     sockaddr_in clientAddress{};
     socklen_t addrlen = sizeof(clientAddress);
-    int acceptedMessageDesc = accept(listenConnDescriptor, (sockaddr *)&clientAddress, &addrlen);
-    if (acceptedMessageDesc < 0) {
-        throw runtime_error("Accepted message: failed");
+    int acceptedMessageDesc;
+    if (!blocking) {
+        acceptedMessageDesc = accept4(listenConnDescriptor, (sockaddr *)&clientAddress, &addrlen, SOCK_NONBLOCK);
+        if (acceptedMessageDesc < 0) {
+            throw runtime_error("Accepted message: failed");
+        }
+    } else {
+        acceptedMessageDesc = accept(listenConnDescriptor, (sockaddr *)&clientAddress, &addrlen);
+        if (acceptedMessageDesc < 0) {
+            throw runtime_error("Accepted message: failed");
+        }
     }
     return FTPClient{ acceptedMessageDesc, clientAddress };
 }
@@ -106,9 +116,11 @@ void FTPServer::ManageRequest(FTPClient &request) {
     Executor executor(request, currentDir);
 
     response.Send(StatusCodes::SERVICE_READY, "Welcome");
-
     while (true) try {
-        auto [requested, cmd] = request.Read();
+        auto tuple = request.Read();
+        FTPCommandList requested = get<0>(tuple);
+        string cmd = get<1>(tuple);
+
         if (requested == FTPCommandList::NOOP)
             continue;
 
@@ -123,9 +135,11 @@ void FTPServer::ManageRequest(FTPClient &request) {
         logger(Logger::Levels::INFO, "Client sent command " + commandStringify
             + (!cmd.empty() ? " with operand " + cmd : " with no operand"));
 
-        auto [code, message] = executor.Command(requested, cmd);
-        response.Send(code, message);
-
+//        thread exec([requested, cmd, &executor, &response]() mutable {
+            auto pair = executor.Command(requested, cmd);
+            response.Send(pair.first, pair.second);
+//        });
+//        exec.detach();
     } catch (UndefinedCommand) {
         response.Send(StatusCodes::UNKNOWN, "Unknown command");
     } catch (NoDataConnection) {
@@ -144,14 +158,16 @@ void FTPServer::ManageRequest(FTPClient &request) {
     }
 }
 
-void FTPServer::SendBinary(string message) {
-    FTPClient request = AcceptMessage(dataFD);
+void FTPServer::SendBinary(char* buffer, int size) {
+    FTPClient request = AcceptMessage(dataFD, false);
 
-    Logger::Print(Logger::Levels::INFO, "Somebody with ip " + request.GetClientAddress() + " connected");
+    auto logger = Logger::SetPrefix("Datachannel");
 
-    char *buffer = const_cast<char *>(message.data());
+    logger(Logger::Levels::INFO, "connection with " + request.GetClientAddress() + ":" + request.GetClientPort());
 
-    write(request.GetClientDescriptor(), (void*)buffer, message.size());
+    write(request.GetClientDescriptor(), (void*)buffer, size);
+
+    logger(Logger::Levels::INFO, "message sent");
     close(request.GetClientDescriptor());
 }
 
@@ -159,15 +175,34 @@ void FTPServer::CloseDataServer() {
     dataPort = 0;
     dataChannelInitialized = false;
     close(dataFD);
+
+    auto logger = Logger::SetPrefix("Datachannel");
+    logger(Logger::Levels::INFO, "listener destroyed");
 }
 
-void FTPServer::ReceiveBinary(char dest[MAX_BUFFER_SIZE]) {
-    FTPClient request = AcceptMessage(dataFD);
+void FTPServer::ReceiveBinary(char *dest, int size) {
+    FTPClient request = AcceptMessage(dataFD, false);
+    auto logger = Logger::SetPrefix("Datachannel");
 
-    Logger::Print(Logger::Levels::INFO, "Receive user binary.");
+    logger(Logger::Levels::INFO, "receive user binary");
 
-    read(request.GetClientDescriptor(), dest, MAX_BINARY_SIZE);
+    int bytesRead = 0;
+    int result = 1;
+    while ((result = read(request.GetClientDescriptor(), dest + bytesRead, size - bytesRead)) != 0)
+    {
+        bytesRead += result;
+    }
+
     close(request.GetClientDescriptor());
 
-    Logger::Print(Logger::Levels::INFO, "Receive user binary completed");
+    logger(Logger::Levels::INFO, "receive user binary completed");
+}
+
+bool FTPServer::SetNonBlocking(int descriptor, bool blocking) {
+    if (descriptor < 0) return false;
+
+    int flags = fcntl(descriptor, F_GETFL, 0);
+    if (flags == -1) return false;
+    flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
+    return fcntl(descriptor, F_SETFL, flags) == 0;
 }
