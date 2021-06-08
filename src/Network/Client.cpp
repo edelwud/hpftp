@@ -76,7 +76,6 @@ void FTPClient::Authorize() {
     }
 
     this->authorized = true;
-    return;
 }
 
 

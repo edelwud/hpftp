@@ -100,7 +100,9 @@ FTPClient FTPServer::AcceptMessage(int listenConnDescriptor) {
  */
 void FTPServer::ManageRequest(FTPClient &request) {
     auto logger = Logger::SetPrefix(request.GetClientAddress() + ":" + request.GetClientPort());
-    string currentDir = "/home/user";
+
+    struct passwd *pw = getpwuid(getuid());
+    string currentDir = pw->pw_dir;
 
     FTPResponse response(request);
     Executor executor(request, currentDir);
