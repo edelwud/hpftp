@@ -6,8 +6,9 @@
 #include <ctime>
 #include <iostream>
 
-#include "Server.h"
-#include "Response.h"
+#include <client/response.h>
+
+#include <server.h>
 
 using namespace std;
 
