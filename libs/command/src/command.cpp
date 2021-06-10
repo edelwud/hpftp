@@ -1,102 +1,66 @@
 #include <command.h>
 
-#include <logger/logger.h>
+#include <utility>
+
+#include <command/operations.h>
+#include <magic_enum.hpp>
 #include <exceptions/undefined_command.h>
 
-// trim from start (in place)
-static inline void ltrim(std::string &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
-        return !std::isspace(ch) && ch != '\n';
-    }));
+Command::Command(CommandList code) : code(code) {}
+
+Command::Command(const std::string& codeName) {
+    SetName(codeName);
 }
 
-// trim from end (in place)
-static inline void rtrim(std::string &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
-        return !std::isspace(ch) && ch != '\n';
-    }).base(), s.end());
+Command::Command(const std::string &codeName, const std::vector<std::string>& args) {
+    SetName(codeName);
+    SetArgs(args);
 }
 
-// trim from both ends (in place)
-static inline void trim(std::string &s) {
-    ltrim(s);
-    rtrim(s);
+Command::Command(CommandList codeName, const std::vector<std::string> &args) {
+    code = codeName;
+    SetArgs(args);
 }
 
-/**
- * Unpack
- * Client input parser with regular expressions usage
- * @param data inputted string
- * @return FTP command, args
- */
-pair<FTPCommandList, string> FTPCommand::Unpack(string data) {
-    trim(data);
-    regex commandParser("([A-Za-z]+)(?: +(.+))?");
-    smatch match;
+CommandList Command::Get() const {
+    return code;
+}
 
-    if (!regex_match(data, match, commandParser)) {
-        Logger::Print(Logger::Levels::INFO, "AHAHAHAH: " + data);
+void Command::Set(CommandList command) {
+    code = command;
+}
+
+void Command::SetName(const std::string& name) {
+    auto command = magic_enum::enum_cast<CommandList>(name);
+    if (!command.has_value()) {
         throw UndefinedCommand();
     }
-
-    if (match.empty()) {
-        throw UndefinedCommand();
-    }
-
-    string command = match.str(1);
-    for_each(command.begin(), command.end(), [](char &element){ element = toupper(element); });
-
-    if (FTPCommandListMap.find(command) == FTPCommandListMap.end()) {
-        throw UndefinedCommand();
-    }
-
-    return { FTPCommandListMap[command], match.str(2) };
+    code = command.value();
 }
 
-/**
- * Packing FTP command into string
- * @param code FTP code defined in StatusCodes
- * @param argument command argument
- * @return result string
- */
-string FTPCommand::Pack(StatusCodes code, const string& argument) {
-    string result = to_string((int)code);
-    result += " ";
-    result += argument;
-    return result;
+std::string Command::GetName() const {
+    return std::string(magic_enum::enum_name(code));
 }
 
-/**
- * Get command
- * Getting stringify command
- * @param command
- * @return optional string
- */
-string FTPCommand::GetCommand(FTPCommandList command) {
-    for (auto [commandStringify, reservedCommand] : FTPCommandListMap) {
-        if (reservedCommand == command) {
-            return commandStringify;
-        }
-    }
-    return {};
+std::string Command::CombineCommand() const {
+    return GetName() + " " + Operations::join(args, ARGS_DELIMITER);
 }
 
-vector<string> FTPCommand::ArgumentParse(string arguments) {
-    vector<string> parsed;
+const std::vector<std::string> &Command::GetArgs() const {
+    return args;
+}
 
-    string delimiter = " ";
+void Command::SetArgs(std::vector<std::string> arguments) {
+    args = std::move(arguments);
+}
 
-    size_t pos = 0;
-    string token;
-    while ((pos = arguments.find(delimiter)) != std::string::npos) {
-        token = arguments.substr(0, pos);
-        if (!token.empty())
-            parsed.push_back(token);
-        arguments.erase(0, pos + delimiter.length());
+bool Command::operator==(const Command& command) const {
+    if (Get() == command.Get() && GetArgs() == command.GetArgs()) {
+        return true;
     }
+    return false;
+}
 
-    if (!arguments.empty())
-        parsed.push_back(arguments);
-
-    return parsed;
+bool Command::operator!=(const Command& command) const {
+    return !(*this == command);
 }

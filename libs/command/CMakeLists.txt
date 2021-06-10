@@ -3,5 +3,6 @@ create_library(
         "Command library for parsing user input"
         "logger"
         "exceptions"
-        "response"
+        "client"
+        "magic_enum"
 )
