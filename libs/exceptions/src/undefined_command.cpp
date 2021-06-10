@@ -1,4 +1,9 @@
-//
-// Created by maksim on 6/10/21.
-//
+#include <undefined_command.h>
 
+const char *UndefinedCommand::what() const noexcept {
+    return "Pressed undefined command";
+}
+
+std::string UndefinedCommand::resolve() const noexcept {
+    return "Pressed undefined command";
+}

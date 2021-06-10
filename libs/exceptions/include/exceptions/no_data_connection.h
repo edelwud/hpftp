@@ -1,5 +1,10 @@
 #pragma once
 
-#include <exception>
+#include <string>
 
-class NoDataConnection : public std::exception {};
+#include <exceptions/ftp_exception.h>
+
+class NoDataConnection : public FTPException {
+    const char * what() const noexcept override;
+    std::string resolve() const noexcept override;
+};

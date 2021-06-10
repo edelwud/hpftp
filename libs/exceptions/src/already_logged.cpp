@@ -1,4 +1,10 @@
-//
-// Created by maksim on 6/10/21.
-//
+#include <already_logged.h>
+
+std::string AlreadyLogged::resolve() const noexcept {
+    return "Client already logged";
+}
+
+const char *AlreadyLogged::what() const noexcept {
+    return "Client already logged";
+}
 

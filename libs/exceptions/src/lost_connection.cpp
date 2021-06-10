@@ -1,4 +1,9 @@
-//
-// Created by maksim on 6/10/21.
-//
+#include <lost_connection.h>
 
+std::string LostConnection::resolve() const noexcept {
+    return "Client lost connection";
+}
+
+const char *LostConnection::what() const noexcept {
+    return "Client lost connection";
+}

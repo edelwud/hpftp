@@ -11,7 +11,7 @@ void Logger::PrintMessage(string message) {
 }
 
 void Logger::Print(Levels level, string message) {
-    string result = LevelsMap[level];
+    string result = LevelsMap[(int)level];
     result += ":";
     result += message;
     PrintMessage(result);
