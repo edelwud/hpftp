@@ -4,7 +4,6 @@
 
 #include <magic_enum.hpp>
 
-#include <logger/logger.h>
 #include <command/operations.h>
 #include <exceptions/undefined_command.h>
 
@@ -19,7 +18,7 @@ CommandList Parser::GetCommandCode() {
         throw UndefinedCommand();
     }
 
-    string commandString = match.str(1);
+    std::string commandString = match.str(1);
     for_each(commandString.begin(), commandString.end(), [](char &element){ element = toupper(element); });
 
     auto command = magic_enum::enum_cast<CommandList>(commandString);
@@ -37,7 +36,7 @@ std::vector<std::string> Parser::GetArgs() {
         throw UndefinedCommand();
     }
 
-    string argsString = match.str(2);
+    std::string argsString = match.str(2);
     return Operations::split(argsString, ARGS_DELIMITER);
 }
 

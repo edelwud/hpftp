@@ -11,7 +11,7 @@ std::string Operations::join(std::vector<std::string> vector, const std::string&
 }
 
 std::vector<std::string> Operations::split(const std::string& argsString, const std::string& delimiter) {
-    std::regex regexz(delimiter);
+    std::regex regexz(delimiter + "+" + delimiter + "?");
     std::vector<std::string> list(std::sregex_token_iterator(argsString.begin(), argsString.end(), regexz, -1),
                                   std::sregex_token_iterator());
     return list;
