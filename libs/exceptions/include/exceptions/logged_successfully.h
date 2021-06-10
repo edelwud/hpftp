@@ -2,7 +2,4 @@
 
 #include <exception>
 
-using namespace std;
-
-class LoggedSuccessfully : public exception {
-};
+class LoggedSuccessfully : public std::exception {};

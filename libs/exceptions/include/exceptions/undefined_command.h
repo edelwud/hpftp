@@ -2,8 +2,4 @@
 
 #include <exception>
 
-using namespace std;
-
-class UndefinedCommand : public exception {
-
-};
+class UndefinedCommand : public std::exception {};

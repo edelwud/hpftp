@@ -2,8 +2,4 @@
 
 #include <exception>
 
-using namespace std;
-
-class NotLogged : public exception {
-
-};
+class NotLogged : public std::exception {};

@@ -2,7 +2,4 @@
 
 #include <exception>
 
-using namespace std;
-
-class AlreadyDeclared : public exception {
-};
+class AlreadyDeclared : public std::exception {};

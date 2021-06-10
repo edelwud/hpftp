@@ -2,8 +2,4 @@
 
 #include <exception>
 
-using namespace std;
-
-class LostConnection : public exception {
-
-};
+class LostConnection : public std::exception {};
