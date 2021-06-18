@@ -28,13 +28,14 @@
 #include <client/status.h>
 
 #include <logger/logger.h>
-#include <command/command.h>
 
-#include "../Filesystem/Executor.h"
+#include <executor/executor.h>
 
 #include <exceptions/not_logged.h>
 #include <exceptions/no_data_connection.h>
 #include <exceptions/undefined_command.h>
+
+#define MAX_BINARY_SIZE 1000
 
 using namespace std;
 

@@ -3,6 +3,7 @@ create_library(
         "Network response library"
         "command"
         "exceptions"
+        "executor"
         "socket"
         "logger"
 )

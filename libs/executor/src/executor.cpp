@@ -135,7 +135,7 @@ void Executor::LIST() {
 
 void Executor::USER(string username) {
     if (this->client.IsAuthorized()) {
-        throw AlreadyDeclared();
+        throw AlreadyLogged();
     }
 
     this->client.SetUsername(username);
@@ -143,7 +143,7 @@ void Executor::USER(string username) {
 
 void Executor::PASS(string password) {
     if (this->client.IsAuthorized()) {
-        throw AlreadyDeclared();
+        throw AlreadyLogged();
     }
 
     this->client.SetPassword(password);

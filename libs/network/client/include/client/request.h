@@ -10,16 +10,15 @@
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
 
-#include <request.h>
-
 #include <command/command.h>
-#include <exceptions/already_declared.h>
+#include <client/request.h>
+#include <exceptions/already_logged.h>
 
 using namespace std;
 
 class FTPClient {
-    string username = "";
-    string password = "";
+    string username;
+    string password;
     bool authorized = false;
 
     int socketDesc;
@@ -29,7 +28,7 @@ class FTPClient {
             { "edelwud", "123" }
     };
 public:
-    using Contract = tuple<FTPCommandList, string>;
+    using Contract = tuple<CommandList, string>;
 
     FTPClient(int descriptor, sockaddr_in client) : socketDesc(descriptor), client(client) {};
 

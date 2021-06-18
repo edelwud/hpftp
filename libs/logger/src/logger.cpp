@@ -1,49 +1,82 @@
 #include <logger.h>
 
-void Logger::PrintMessage(string message) {
-    stringstream stream;
-    stream << message << endl;
+#include <utility>
+#include <iostream>
+#include <ctime>
+#include <sstream>
 
-    ofstream logFile("./log.txt", ios::app);
-    logFile << stream.str();
-    cout << stream.str();
-    logFile.close();
+#include <magic_enum.hpp>
+
+Logger::Logger(Levels level) : currentLevel(level) {}
+
+Logger::Logger(Levels level, std::string prefix) : Logger(level) {
+    currentPrefix = std::move(prefix);
 }
 
-void Logger::Print(Levels level, string message) {
-    string result = LevelsMap[(int)level];
-    result += ":";
-    result += message;
-    PrintMessage(result);
+Logger::Logger(Levels level, std::string prefix, int tasksNumber) : Logger(level) {
+    taskSummary = tasksNumber;
+    taskPrefix = std::move(prefix);
 }
 
-Logger::Contract Logger::CreateTask(string title, int numberOfTasks) {
-    ofstream logFile("task_log.txt", ios::app);
-    logFile << "Task: " << title << endl;
-    cout << "Task: " << title << endl;
-    logFile.close();
-
-    return [=](string completedTask) {
-        static int currentTask = 0;
-        stringstream stream;
-
-        if (numberOfTasks < currentTask)
-            return;
-
-        stream << title << " [" << ++currentTask << '/' << numberOfTasks << "]: " << completedTask << endl;
-
-        ofstream logFile("task_log.txt", ios::app);
-        logFile << stream.str();
-        cout << stream.str();
-        logFile.close();
-    };
+Logger::Logger(std::string prefix) {
+    currentPrefix = std::move(prefix);
 }
 
+Logger::Logger(std::string prefix, int tasksNumber) : Logger(std::move(prefix)) {
+    taskSummary = tasksNumber;
+}
 
+void Logger::Print(const std::string& message) {
+    std::cout << formatMessage(message) << std::endl;
+}
 
-function<void(Logger::Levels, string)> Logger::SetPrefix(string prefix) {
-    return [=](Logger::Levels level, string message){
-        string result = " [" + prefix + "] " + message;
-        Logger::Print(level, result);
-    };
+std::string Logger::getTimestamp() {
+    std::time_t result = std::time(nullptr);
+    std::string localeString = std::asctime(std::localtime(&result));
+    return localeString.substr(0, localeString.size() - 1);
+}
+
+Levels Logger::getLevel() const {
+    return currentLevel;
+}
+
+void Logger::setLevel(Levels level) {
+    currentLevel = level;
+}
+
+const std::string &Logger::getPrefix() const {
+    return currentPrefix;
+}
+
+void Logger::setPrefix(std::string prefix) {
+    currentPrefix = std::move(prefix);
+}
+
+void Logger::setShowTimestamp(bool show) {
+    showTimestamp = show;
+}
+
+void Logger::ResolveTask() {
+
+}
+
+Logger Logger::CreateTask(const std::string& title, int numberOfTasks) {
+    std::cout << "[TASK] " << title << std::endl;
+    return Logger(currentLevel, title, numberOfTasks);
+}
+
+std::string Logger::formatMessage(const std::string& message) {
+    std::stringstream stream;
+
+    taskSummary ? stream << '[' << taskPrefix << ']' : stream << std::string();
+    if (taskSummary && ++currentTask == taskSummary) {
+        currentTask = 0;
+        taskSummary = 0;
+    }
+
+    stream << "[" << magic_enum::enum_name(currentLevel);
+    showTimestamp ? stream << ' ' << getTimestamp() << ']' : stream << ']';
+    !currentPrefix.empty() ? stream << '[' << currentPrefix << ']' : stream << std::string();
+    stream << ' ' << message;
+    return stream.str();
 }

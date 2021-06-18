@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdexcept>
 
 class FTPException : public std::exception {

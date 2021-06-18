@@ -2,6 +2,8 @@
 
 #include <logger/logger.h>
 
+#define MAX_BUFFER_SIZE 1000
+
 /**
  * Initialization of FTP server
  */
@@ -113,22 +115,22 @@ void FTPServer::ManageRequest(FTPClient &request) {
 
     while (true) try {
             auto [requested, cmd] = request.Read();
-            if (requested == FTPCommandList::NOOP)
+            if (requested == CommandList::NOOP)
                 continue;
-
-            string commandStringify = FTPCommand::GetCommand(requested);
-
-            if (!request.IsAuthorized()) {
-                if (notLoggedAllowed.end() == notLoggedAllowed.find(commandStringify)) {
-                    throw NotLogged();
-                }
-            }
-
-            logger(Logger::Levels::INFO, "Client sent command " + commandStringify
-                                         + (!cmd.empty() ? " with operand " + cmd : " with no operand"));
-
-            auto [code, message] = executor.Command(requested, cmd);
-            response.Send(code, message);
+//
+//            string commandStringify = Command::GetCommand(requested);
+//
+//            if (!request.IsAuthorized()) {
+//                if (notLoggedAllowed.end() == notLoggedAllowed.find(commandStringify)) {
+//                    throw NotLogged();
+//                }
+//            }
+//
+//            logger(Logger::Levels::INFO, "Client sent command " + commandStringify
+//                                         + (!cmd.empty() ? " with operand " + cmd : " with no operand"));
+//
+//            auto [code, message] = executor.Command(requested, cmd);
+//            response.Send(code, message);
 
         } catch (UndefinedCommand) {
             response.Send(StatusCodes::UNKNOWN, "Unknown command");
@@ -136,7 +138,7 @@ void FTPServer::ManageRequest(FTPClient &request) {
             response.Send(StatusCodes::NO_DATA_CONNECTION, "No data connection opened");
         } catch (NotLogged) {
             response.Send(StatusCodes::NO_ACCESS, "No access to user this command");
-        } catch (AlreadyDeclared) {
+        } catch (AlreadyLogged) {
             response.Send(StatusCodes::UNKNOWN, "User already logged");
         } catch (logic_error error) {
             response.Send(StatusCodes::UNKNOWN, error.what());

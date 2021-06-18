@@ -9,9 +9,8 @@
 #include <unistd.h>
 
 #include <socket/server.h>
-
-#include <request.h>
-#include <status.h>
+#include <client/request.h>
+#include <client/status.h>
 
 using namespace std;
 

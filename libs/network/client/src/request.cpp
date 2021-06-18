@@ -3,6 +3,9 @@
 #include <iostream>
 #include <iconv.h>
 
+#define MAX_BUFFER_SIZE 1000
+#define ANONYMOUS "anon"
+
 /**
  * Reading and parsing client command
  */
@@ -16,7 +19,7 @@ FTPClient::Contract FTPClient::Read() const {
     if (status == 0) {
         throw runtime_error("Connection closed");
     }
-    return FTPCommand::Unpack(buffer);
+    return {};
 }
 
 /**
@@ -62,7 +65,7 @@ bool FTPClient::IsAuthorized() const {
  */
 void FTPClient::Authorize() {
     if (this->authorized) {
-        throw AlreadyDeclared();
+        throw AlreadyLogged();
     }
 
     if (this->username == ANONYMOUS) {
