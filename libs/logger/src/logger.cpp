@@ -57,7 +57,8 @@ void Logger::setShowTimestamp(bool show) {
 }
 
 void Logger::ResolveTask() {
-
+    currentTask = 0;
+    taskSummary = 0;
 }
 
 Logger Logger::CreateTask(const std::string& title, int numberOfTasks) {
