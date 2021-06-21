@@ -2,8 +2,8 @@
 
 #include <uv.h>
 
-#include <string>
 #include <functional>
+#include <string>
 
 class Socket {
 public:
@@ -19,7 +19,7 @@ private:
 
 private:
     uv_tcp_t server{};
-    uv_loop_t* loop{};
+    uv_loop_t *loop{};
 
 private:
     std::string address;

@@ -3,5 +3,4 @@ create_library(
         "Command library for parsing user input"
         "exceptions"
         "magic_enum"
-        "glog"
 )

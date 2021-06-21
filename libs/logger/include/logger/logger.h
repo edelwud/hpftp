@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <functional>
+#include <string>
 
 #include <logger/levels.h>
 
@@ -17,23 +17,23 @@ public:
     Logger(std::string prefix, int tasksNumber);
 
 public:
-    void Print(const std::string& message);
+    void Print(const std::string &message);
 
-    Logger CreateTask(const std::string& title, int numberOfTasks);
+    Logger CreateTask(const std::string &title, int numberOfTasks);
     void ResolveTask();
 
 public:
     [[nodiscard]] Levels getLevel() const;
     void setLevel(Levels level);
 
-    [[nodiscard]] const std::string& getPrefix() const;
+    [[nodiscard]] const std::string &getPrefix() const;
     void setPrefix(std::string prefix);
 
     void setShowTimestamp(bool show);
 
 private:
     static std::string getTimestamp();
-    std::string formatMessage(const std::string& message);
+    std::string formatMessage(const std::string &message);
 
 private:
     bool showTimestamp = false;

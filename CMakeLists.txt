@@ -7,6 +7,7 @@ CPMAddPackage(
         NAME magic_enum
         GITHUB_REPOSITORY Neargye/magic_enum
         GIT_TAG v0.7.2
+        OPTIONS "MAGIC_ENUM_OPT_BUILD_EXAMPLES NO;MAGIC_ENUM_OPT_BUILD_TESTS NO"
 )
 
 CPMAddPackage(
@@ -19,6 +20,7 @@ CPMAddPackage(
         NAME libuv
         GITHUB_REPOSITORY libuv/libuv
         GIT_TAG v1.41.0
+        OPTIONS "LIBUV_BUILD_BENCH NO;LIBUV_BUILD_TESTS NO"
 )
 
 CPMAddPackage(
