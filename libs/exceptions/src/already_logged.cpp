@@ -7,4 +7,3 @@ std::string AlreadyLogged::resolve() const noexcept {
 const char *AlreadyLogged::what() const noexcept {
     return "Client already logged";
 }
-

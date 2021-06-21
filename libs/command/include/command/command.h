@@ -17,22 +17,23 @@ class Command {
 public:
     explicit Command() = default;
     explicit Command(CommandList code);
-    explicit Command(CommandList code, const std::vector<std::string>& args);
-    explicit Command(const std::string& codeName);
-    explicit Command(const std::string& codeName, const std::vector<std::string>& args);
+    explicit Command(CommandList code, const std::vector<std::string> &args);
+    explicit Command(const std::string &codeName);
+    explicit Command(const std::string &codeName,
+                     const std::vector<std::string> &args);
 
 public:
-    bool operator==(const Command& command) const;
-    bool operator!=(const Command& command) const;
+    bool operator==(const Command &command) const;
+    bool operator!=(const Command &command) const;
 
 public:
     [[nodiscard]] std::string GetName() const;
-    void SetName(const std::string& name);
+    void SetName(const std::string &name);
 
     [[nodiscard]] CommandList Get() const;
     void Set(CommandList code);
 
-    [[nodiscard]] const std::vector<std::string>& GetArgs() const;
+    [[nodiscard]] const std::vector<std::string> &GetArgs() const;
     void SetArgs(std::vector<std::string> arguments);
 
 public:

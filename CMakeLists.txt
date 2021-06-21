@@ -12,6 +12,18 @@ CPMAddPackage(
 CPMAddPackage(
         NAME GTest
         GITHUB_REPOSITORY google/googletest
+        GIT_TAG release-1.11.0
+)
+
+CPMAddPackage(
+        NAME libuv
+        GITHUB_REPOSITORY libuv/libuv
+        GIT_TAG v1.41.0
+)
+
+CPMAddPackage(
+        NAME openssl
+        GITHUB_REPOSITORY microcai/openssl-cmake
         GIT_TAG master
 )
 

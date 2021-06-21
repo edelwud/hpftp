@@ -9,12 +9,12 @@
  */
 void FTPResponse::Send(StatusCodes code, string message) {
     stringstream output;
-    output << (int)code << ' ' << message << '\n';
+    output << (int) code << ' ' << message << '\n';
 
     int descriptor = this->request.GetClientDescriptor();
     char *buffer = const_cast<char *>(output.str().data());
 
-    write(descriptor, (void*)buffer, output.str().size());
+    write(descriptor, (void *) buffer, output.str().size());
 }
 
 void FTPResponse::SendBinary(string message) {
@@ -25,5 +25,5 @@ void FTPResponse::SendBinary(string message) {
     int descriptor = FTPServer::dataFD;
     char *buffer = const_cast<char *>(message.data());
 
-    write(descriptor, (void*)buffer, message.size());
+    write(descriptor, (void *) buffer, message.size());
 }

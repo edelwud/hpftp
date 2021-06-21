@@ -1,9 +1,9 @@
 #include <logger.h>
 
-#include <utility>
-#include <iostream>
 #include <ctime>
+#include <iostream>
 #include <sstream>
+#include <utility>
 
 #include <magic_enum.hpp>
 
@@ -26,7 +26,7 @@ Logger::Logger(std::string prefix, int tasksNumber) : Logger(std::move(prefix)) 
     taskSummary = tasksNumber;
 }
 
-void Logger::Print(const std::string& message) {
+void Logger::Print(const std::string &message) {
     std::cout << formatMessage(message) << std::endl;
 }
 
@@ -61,12 +61,12 @@ void Logger::ResolveTask() {
     taskSummary = 0;
 }
 
-Logger Logger::CreateTask(const std::string& title, int numberOfTasks) {
+Logger Logger::CreateTask(const std::string &title, int numberOfTasks) {
     std::cout << "[TASK] " << title << std::endl;
     return Logger(currentLevel, title, numberOfTasks);
 }
 
-std::string Logger::formatMessage(const std::string& message) {
+std::string Logger::formatMessage(const std::string &message) {
     std::stringstream stream;
 
     taskSummary ? stream << '[' << taskPrefix << ']' : stream << std::string();

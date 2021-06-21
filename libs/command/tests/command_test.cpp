@@ -16,13 +16,13 @@ TEST(command_test, SetCommandNameTest) {
     Command command(CommandList::AUTH);
     ASSERT_EQ(command.GetName(), "AUTH");
 
-    Command command2("AUTH", { "username" });
+    Command command2("AUTH", {"username"});
     ASSERT_EQ(command2.GetName(), "AUTH");
     ASSERT_EQ(command2.CombineCommand(), "AUTH username");
 }
 
 TEST(command_test, CombainCommandTest) {
     Command command(CommandList::AUTH);
-    command.SetArgs({ "username" });
+    command.SetArgs({"username"});
     ASSERT_EQ(command.CombineCommand(), "AUTH username");
 }

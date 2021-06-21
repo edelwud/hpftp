@@ -1,7 +1,7 @@
 #include <request.h>
 
-#include <iostream>
 #include <iconv.h>
+#include <iostream>
 
 #define MAX_BUFFER_SIZE 1000
 #define ANONYMOUS "anon"
@@ -10,7 +10,7 @@
  * Reading and parsing client command
  */
 FTPClient::Contract FTPClient::Read() const {
-    char buffer[MAX_BUFFER_SIZE] = { 0 };
+    char buffer[MAX_BUFFER_SIZE] = {0};
 
     int status = read(this->socketDesc, buffer, MAX_BUFFER_SIZE);
     if (status == -1) {
@@ -27,7 +27,7 @@ FTPClient::Contract FTPClient::Read() const {
  * @return address string
  */
 string FTPClient::GetClientAddress() {
-    char address[INET_ADDRSTRLEN]{ 0 };
+    char address[INET_ADDRSTRLEN]{0};
     if (inet_ntop(AF_INET, &this->client.sin_addr.s_addr, address, sizeof(address)) == nullptr) {
         throw runtime_error("Address format is unsupported");
     }

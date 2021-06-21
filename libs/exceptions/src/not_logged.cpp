@@ -7,4 +7,3 @@ std::string NotLogged::resolve() const noexcept {
 const char *NotLogged::what() const noexcept {
     return "User not logged";
 }
-

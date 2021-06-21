@@ -7,9 +7,7 @@
 #include <command/operations.h>
 #include <exceptions/undefined_command.h>
 
-Parser::Parser(const std::string& message) {
-    SetMessage(message);
-}
+Parser::Parser(const std::string &message) { SetMessage(message); }
 
 CommandList Parser::GetCommandCode() {
     std::regex commandParser("([A-Za-z]+) +(.+)");
@@ -19,7 +17,8 @@ CommandList Parser::GetCommandCode() {
     }
 
     std::string commandString = match.str(1);
-    for_each(commandString.begin(), commandString.end(), [](char &element){ element = toupper(element); });
+    for_each(commandString.begin(), commandString.end(),
+             [](char &element) { element = toupper(element); });
 
     auto command = magic_enum::enum_cast<CommandList>(commandString);
     if (!command.has_value()) {
@@ -40,10 +39,8 @@ std::vector<std::string> Parser::GetArgs() {
     return Operations::split(argsString, ARGS_DELIMITER);
 }
 
-void Parser::SetMessage(const std::string& msg) {
+void Parser::SetMessage(const std::string &msg) {
     message = Operations::trim(msg);
 }
 
-Command Parser::LoadCommand() {
-    return Command(GetCommandCode(), GetArgs());
-}
+Command Parser::LoadCommand() { return Command(GetCommandCode(), GetArgs()); }
