@@ -1,0 +1,11 @@
+prefix=/home/maksim/Dev/hpftp/install
+exec_prefix=${prefix}
+libdir=/home/maksim/Dev/hpftp/install/lib
+includedir=/home/maksim/Dev/hpftp/install/include
+
+Name: libcommand
+Version: 0.0.1
+Description: Command library for parsing user input
+
+Libs: -L${libdir} 
+Cflags: -I${includedir}

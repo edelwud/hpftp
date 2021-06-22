@@ -1,7 +1,16 @@
 cmake_minimum_required(VERSION 3.10)
 
-include(GNUInstallDirs)
 include(cmake/main.cmake)
+
+get_project_name("${CMAKE_CURRENT_SOURCE_DIR}" "PROJECT_NAME")
+project(${PROJECT_NAME}
+        VERSION 0.1.1
+        DESCRIPTION "High performance FTP server")
+
+include(GNUInstallDirs)
+
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install")
+set(CMAKE_CXX_STANDARD 17)
 
 CPMAddPackage(
         NAME magic_enum
@@ -23,19 +32,14 @@ CPMAddPackage(
         OPTIONS "LIBUV_BUILD_BENCH NO;LIBUV_BUILD_TESTS NO"
 )
 
-CPMAddPackage(
-        NAME openssl
-        GITHUB_REPOSITORY microcai/openssl-cmake
-        GIT_TAG master
-)
-
-set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install")
-set(CMAKE_CXX_STANDARD 17)
-
-get_project_name("${CMAKE_CURRENT_SOURCE_DIR}" "PROJECT_NAME")
-project(${PROJECT_NAME}
-        VERSION 0.1.1
-        DESCRIPTION "High performance FTP server")
+find_package(OpenSSL)
+if(NOT OPENSSL_FOUND)
+    CPMAddPackage(
+            NAME openssl
+            GITHUB_REPOSITORY microcai/openssl-cmake
+            GIT_TAG master
+    )
+endif()
 
 initialize_project(${CMAKE_CURRENT_SOURCE_DIR})
 

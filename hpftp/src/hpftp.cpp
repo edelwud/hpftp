@@ -1,8 +1,9 @@
-#include <hpftp.h>
-
-#include <iostream>
+#include <logger/logger.h>
 
 int main() {
-    std::cout << "OK" << std::endl;
+    Logger logger;
+    logger.setShowTimestamp(true);
+    logger.Print("KEKW");
+
     return 0;
 }
