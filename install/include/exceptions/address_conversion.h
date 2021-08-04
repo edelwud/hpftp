@@ -4,6 +4,6 @@
 
 #include <exceptions/internal_exception.h>
 
-class BindException : public InternalException {
+class AddressConversion : public InternalException {
     const char *what() const noexcept override;
 };

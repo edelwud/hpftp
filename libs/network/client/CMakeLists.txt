@@ -1,5 +1,8 @@
-create_library(
-        "0.0.1"
-        "Network response library"
-        YES
+create_module(
+        TYPE library
+        VERSION 0.0.1
+        DESCRIPTION Network response library
+        EXPORT
+            CMAKE YES
+            PKGCONF YES
 )
