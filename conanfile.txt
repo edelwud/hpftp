@@ -1,0 +1,8 @@
+[requires]
+openssl/1.1.1k
+libuv/1.41.1
+magic_enum/0.7.3
+gtest/cci.20210126
+
+[generators]
+cmake
