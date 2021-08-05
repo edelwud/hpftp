@@ -1,25 +1,29 @@
-# Сборка
-FROM gcc:latest AS build
+FROM alpine:3.14 as builder
 
-RUN apt-get update && \
-    apt-get install -y cmake
+RUN apk --no-cache add \
+    build-base \
+    clang \
+    clang-dev \
+    ninja \
+    git \
+    openssl \
+    openssl-dev \
+    cmake
 
-COPY . /usr/src/FTPServer
-WORKDIR /usr/src/FTPServer/dist
+WORKDIR /hpftp
 
-# This command compiles your app using GCC, adjust for your source code
-RUN cmake ../../FTPServer && \
-    cmake --build .
+COPY . .
 
-# В качестве базового образа используем ubuntu:latest
-FROM ubuntu:latest
+RUN mkdir build && \
+    cd build && \
+    cmake \
+        -G Ninja \
+        -D CMAKE_C_COMPILER=clang \
+        -D CMAKE_CXX_COMPILER=clang++ \
+        -D CMAKE_CXX_FLAGS="-Wno-everything" \
+        -D CMAKE_BUILD_TYPE=Release \
+        -D CMAKE_INSTALL_PREFIX=/usr/local \
+        .. && \
+    ninja && ninja install
 
-# Установим рабочую директорию нашего приложения
-WORKDIR /usr/src/FTPServer/dist
-
-# Скопируем приложение со сборочного контейнера в рабочую директорию
-COPY --from=build /usr/src/FTPServer/dist .
-
-EXPOSE 50505
-# Установим точку входа
-ENTRYPOINT ["./FTPServer"]
+CMD ["hpftp"]

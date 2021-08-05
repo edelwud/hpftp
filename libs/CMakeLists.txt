@@ -1,0 +1,5 @@
+add_subdirectory(command)
+add_subdirectory(executor)
+add_subdirectory(exceptions)
+add_subdirectory(logger)
+add_subdirectory(network)

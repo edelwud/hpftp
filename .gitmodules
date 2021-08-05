@@ -1,0 +1,3 @@
+[submodule "cmake"]
+	path = cmake
+	url = http://github.com/edelwud/cmake-addon
