@@ -15,9 +15,9 @@ public:
     void Run();
 
 private:
-    static void AcceptConnection(uv_stream_t *server, int status);
-    static void AsyncCloseCallback(uv_async_t *handle);
-    static void StartThread(void *pSocket);
+    static void AcceptConnection(uv_stream_t* server, int status);
+    static void AsyncCloseCallback(uv_async_t* handle);
+    static void StartThread(void* pSocket);
 
 private:
     void RunServer(int status = UV_RUN_DEFAULT);

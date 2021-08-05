@@ -34,7 +34,7 @@ void Socket::Init() {
     }
     server.data = this;
 
-    if (uv_tcp_nodelay(&server,  true)) {
+    if (uv_tcp_nodelay(&server, true)) {
         throw InternalException();
     }
 
@@ -42,7 +42,7 @@ void Socket::Init() {
         throw AddressConversion();
     }
 
-    if (uv_tcp_bind(&server, (sockaddr *)&addr, 0)) {
+    if (uv_tcp_bind(&server, (sockaddr *) &addr, 0)) {
         throw BindException();
     }
 
@@ -59,16 +59,16 @@ void Socket::Run() {
 }
 
 void Socket::AsyncCloseCallback(uv_async_t *handle) {
-    auto socket = (Socket*)handle->data;
+    auto socket = (Socket *) handle->data;
 }
 
-void Socket::StartThread(void* pSocket) {
-    auto socket = (Socket*)pSocket;
+void Socket::StartThread(void *pSocket) {
+    auto socket = (Socket *) pSocket;
     socket->RunServer();
 }
 
 void Socket::RunServer(int status) {
-    if (uv_run(&loop, (uv_run_mode)status)) {
+    if (uv_run(&loop, (uv_run_mode) status)) {
         throw InternalException();
     }
 }
